@@ -4,6 +4,12 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"context"
+	"time"
+    "github.com/sthits123/uptime-monitor/internal/database"
 )
 
 type Response struct {
@@ -30,13 +36,48 @@ func Healthcheck(w http.ResponseWriter,r *http.Request){
 }
 
 func main(){
+	 //Start the databse
+	 db, err := database.New()
+	 
+	 if err != nil {
+		 log.Fatal("failed to connect to database: ", err)
+	 }
+	 defer db.Close()
+	
 	mux:=http.NewServeMux()
     
 	mux.HandleFunc("GET /api/v1/healthcheck",Healthcheck)
+    
+
+     server:=&http.Server{
+		Addr:":8080",
+        Handler:mux,		
+	 }
+
+	
+	
+	 go func() {
+		log.Println("server listening on :8080")
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatal(err)
+		}
+	}()
+
+	//Listen for shutdown signal
+	quit:=make(chan os.Signal,1)
+	signal.Notify(quit,os.Interrupt,syscall.SIGTERM)
+    <- quit
+	
+	log.Println("Shutdown server")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	if err := server.Shutdown(ctx); err != nil {
+		log.Println("server forced to shutdown:", err)
+	}
+
+	log.Println("server exited properly")
+	
    
-	log.Println("The server is listening at port:8080")
- 
-	if err:=http.ListenAndServe(":8080",mux);err!=nil{
-	   log.Fatal(err.Error())
-   }
 }
