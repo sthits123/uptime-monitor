@@ -1,7 +1,7 @@
 version: '3'
 
 vars:
-  TASKER_DB_DSN: '{{.TASKER_DB_DSN | default ""}}'
+  TASKER_DB_DSN: '{{.DATABASE_URL | default ""}}'
 
 tasks:
   help:

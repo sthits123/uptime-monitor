@@ -11,17 +11,16 @@ import (
 	"github.com/joho/godotenv"
 )
 
-type Database struct{
+type Database struct {
 	Pool *pgxpool.Pool
 }
-
 
 const DatabasePingTimeout = 10
 
 func New() (*Database, error) {
-	
-	err:=godotenv.Load()
-	if err!=nil{
+
+	err := godotenv.Load()
+	if err != nil {
 		log.Fatal("Error loading .env files")
 	}
 
