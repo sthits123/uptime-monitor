@@ -2,14 +2,16 @@ package main
 
 import (
 	"context"
-	"github.com/sthits123/uptime-monitor/internal/database"
-	"github.com/sthits123/uptime-monitor/internal/handlers"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/sthits123/uptime-monitor/internal/database"
+	"github.com/sthits123/uptime-monitor/internal/handlers"
+	"github.com/sthits123/uptime-monitor/internal/repositories"
 )
 
 type Response struct {
@@ -26,11 +28,16 @@ func main() {
 		log.Fatal("failed to connect to database: ", err)
 	}
 	defer db.Close()
-
+    
+	userRepo:=repositories.NewUserRepo(db.Pool)
+	authHandler := handlers.NewAuthHandler(userRepo)
+  
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("GET /api/v1/healthcheck", handlers.Healthcheck)
+    mux.HandleFunc("POST /api/v1/signup",     authHandler.Signup)
 
+	
 	server := &http.Server{
 		Addr:    ":8080",
 		Handler: mux,
