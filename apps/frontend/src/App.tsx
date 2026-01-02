@@ -1,23 +1,36 @@
 import { ThemeProvider } from "./components/ui/theme-provider"
-import { Header } from "./custom-components/Header"
-import { HeroSection } from "./custom-components/Hero-sec"
-import { Stats } from "./custom-components/Stats"
-import { Monitor } from "./custom-components/Monitor"
-import { Features } from "./custom-components/Features"
-import { CTASection } from "./custom-components/Cta-section"
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Toaster  } from "./components/ui/sonner";
+import Index from "./pages/Index";
+import Dashboard from "./pages/Dashboard";
+import Monitors from "./pages/Monitors";
+import Incidents from "./pages/Incidents";
+import Settings from "./pages/Settings";
+import NotFound from "./pages/NotFound";
+import Status from "./pages/Status";
+import {TooltipProvider } from "@radix-ui/react-tooltip";
 
 function App() {
   return (
-    <ThemeProvider defaultTheme="dark" storageKey="ui-theme">
-    <div className="flex min-h-svh flex-col items-center justify-center">
-      <Header></Header>
-      <HeroSection></HeroSection>
-      <Stats></Stats>
-      <Monitor></Monitor>
-      <Features></Features>
-      <CTASection></CTASection>
-    </div>
+    <ThemeProvider>
+     <TooltipProvider>
+      <Toaster />
+      
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/monitors" element={<Monitors />} />
+          <Route path="/incidents" element={<Incidents />} />
+          <Route path="/status" element={<Status />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </BrowserRouter>
+    </TooltipProvider>
     </ThemeProvider>
+    
+    
   )
 }
 
