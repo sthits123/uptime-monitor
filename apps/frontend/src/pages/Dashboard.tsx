@@ -1,3 +1,11 @@
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { StatsCard } from "@/components/StatsCard";
@@ -84,91 +92,34 @@ export default function Dashboard() {
       <Navbar />
       
       <main className="pt-24 pb-16 px-4">
-        <div className="container mx-auto">
-          {/* Header */}
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
-            <div>
-              <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
-              <p className="text-muted-foreground">Welcome back! Here's an overview of your monitoring status.</p>
-            </div>
-            <Button variant="default">
-              <Plus className="w-4 h-4 mr-2" />
-              Add Monitor
-            </Button>
+        {/* Header */}
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
+          <div>
+            <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
+            <p className="text-muted-foreground">Welcome back! Here's an overview of your monitoring status.</p>
           </div>
-
-          {/* Stats Grid */}
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            <StatsCard
-              title="Total Monitors"
-              value={24}
-              subtitle="4 new this month"
-              icon={Activity}
-              trend={{ value: 12, isPositive: true }}
-            />
-            <StatsCard
-              title="Average Uptime"
-              value="99.94%"
-              subtitle="Last 30 days"
-              icon={Shield}
-              trend={{ value: 0.02, isPositive: true }}
-            />
-            <StatsCard
-              title="Avg Response Time"
-              value="145ms"
-              subtitle="Across all monitors"
-              icon={Clock}
-              trend={{ value: 8, isPositive: false }}
-            />
-            <StatsCard
-              title="Open Incidents"
-              value={1}
-              subtitle="1 investigating"
-              icon={AlertTriangle}
-            />
-          </div>
-
-          {/* Uptime Chart */}
-          <UptimeChart data={uptimeData} className="mb-8" />
-
-          {/* Content Grid */}
-          <div className="grid lg:grid-cols-3 gap-8">
-            {/* Monitors Section */}
-            <div className="lg:col-span-2">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-semibold">Active Monitors</h2>
-                <div className="flex items-center gap-2">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input 
-                      placeholder="Search monitors..." 
-                      className="pl-9 w-48 bg-secondary/50"
-                    />
-                  </div>
-                  <Button variant="outline" size="icon">
-                    <Filter className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-              
-              <div className="grid gap-4">
-                {monitors.map((monitor, index) => (
-                  <MonitorCard key={index} {...monitor} />
-                ))}
-              </div>
-            </div>
-
-            {/* Recent Incidents Section */}
-            <div>
-              <h2 className="text-xl font-semibold mb-4">Recent Incidents</h2>
-              <div className="space-y-4">
-                {recentIncidents.map((incident) => (
-                  <IncidentCard key={incident.id} {...incident} />
-                ))}
-              </div>
-            </div>
-          </div>
+          <Button variant="default">
+            <Plus className="w-4 h-4 mr-2" />
+            Add Monitor
+          </Button>
         </div>
+        <Dialog>
+          <DialogTrigger>Open</DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Are you absolutely sure?</DialogTitle>
+              <DialogDescription>
+                This action cannot be undone. This will permanently delete your account
+                and remove your data from our servers.
+              </DialogDescription>
+            </DialogHeader>
+          </DialogContent>
+        </Dialog>
+
+        {/* Stats Grid */}
+
+        {/* Content Grid */}
+        {/* Monitors Section */}
       </main>
 
       <Footer />
