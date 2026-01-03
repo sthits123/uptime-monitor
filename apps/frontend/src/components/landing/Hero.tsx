@@ -28,7 +28,7 @@ const Hero = () => {
 
           {/* Subheadline */}
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 animate-fade-in" style={{ animationDelay: "0.2s" }}>
-            PingGuard monitors your websites, APIs, and servers around the clock. 
+            UptimeMonitor monitors your websites, APIs, and servers around the clock. 
             Get instant alerts via SMS, email, Slack, and more when something goes wrong.
           </p>
 
@@ -71,7 +71,7 @@ const Hero = () => {
                 <div className="w-3 h-3 rounded-full bg-destructive" />
                 <div className="w-3 h-3 rounded-full bg-warning" />
                 <div className="w-3 h-3 rounded-full bg-success" />
-                <span className="ml-4 text-sm text-muted-foreground">dashboard.pingguard.io</span>
+                <span className="ml-4 text-sm text-muted-foreground">dashboard.UptimeMonitor.io</span>
               </div>
               
               {/* Mock Dashboard Content */}

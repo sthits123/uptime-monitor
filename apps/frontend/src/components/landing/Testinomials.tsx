@@ -4,13 +4,13 @@ const testimonials = [
   {
     name: "Sarah Chen",
     role: "CTO at TechFlow",
-    content: "PingGuard has been instrumental in maintaining our 99.99% uptime. The alerting system is incredibly fast and reliable.",
+    content: "UptimeMonitor has been instrumental in maintaining our 99.99% uptime. The alerting system is incredibly fast and reliable.",
     avatar: "SC",
   },
   {
     name: "Marcus Rodriguez",
     role: "DevOps Lead at Scaler",
-    content: "We switched from three different monitoring tools to just PingGuard. It does everything we need and more.",
+    content: "We switched from three different monitoring tools to just UptimeMonitor. It does everything we need and more.",
     avatar: "MR",
   },
   {
@@ -30,7 +30,7 @@ const Testimonials = () => {
             Trusted by thousands of teams
           </h2>
           <p className="text-lg text-muted-foreground">
-            See what our customers have to say about PingGuard.
+            See what our customers have to say about UptimeMonitor.
           </p>
         </div>
 

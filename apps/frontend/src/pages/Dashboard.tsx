@@ -1,126 +1,128 @@
-import DashboardLayout from "@/components/layout/DashboardLayout";
-import StatCard from "@/components/dashboard/StatCard";
-import MonitorCard from "@/components/dashboard/MonitorCard";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/Footer";
+import { StatsCard } from "@/components/StatsCard";
+import { MonitorCard } from "@/components/MonitorCard";
+import { IncidentCard } from "@/components/IncidentCard";
+import { UptimeChart } from "@/components/UptimeChart";
+import { 
+  Activity, 
+  Shield, 
+  Clock, 
+  AlertTriangle,
+  Plus,
+  Filter,
+  Search
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Activity, AlertTriangle, Clock, Plus, TrendingUp } from "lucide-react";
+import { Input } from "@/components/ui/input";
 
 const monitors = [
   {
-    name: "Production API",
+    name: "API Production",
     url: "https://api.example.com",
     status: "up" as const,
-    uptime: 99.98,
-    responseTime: 145,
-    lastChecked: "30s ago",
-  },
-  {
-    name: "Main Website",
-    url: "https://example.com",
-    status: "up" as const,
-    uptime: 99.95,
-    responseTime: 89,
-    lastChecked: "15s ago",
-  },
-  {
-    name: "CDN",
-    url: "https://cdn.example.com",
-    status: "degraded" as const,
-    uptime: 98.5,
-    responseTime: 456,
-    lastChecked: "45s ago",
-  },
-  {
-    name: "Database Cluster",
-    url: "https://db.example.com:5432",
-    status: "up" as const,
     uptime: 99.99,
-    responseTime: 12,
+    responseTime: 124,
     lastChecked: "10s ago",
   },
   {
-    name: "Auth Service",
-    url: "https://auth.example.com",
-    status: "down" as const,
-    uptime: 95.2,
-    responseTime: 0,
-    lastChecked: "5m ago",
+    name: "Marketing Website",
+    url: "https://www.example.com",
+    status: "up" as const,
+    uptime: 99.97,
+    responseTime: 245,
+    lastChecked: "15s ago",
+  },
+  {
+    name: "Customer Portal",
+    url: "https://app.example.com",
+    status: "degraded" as const,
+    uptime: 99.45,
+    responseTime: 890,
+    lastChecked: "8s ago",
   },
   {
     name: "Payment Gateway",
-    url: "https://payments.example.com",
+    url: "https://pay.example.com",
     status: "up" as const,
-    uptime: 99.97,
-    responseTime: 234,
-    lastChecked: "20s ago",
+    uptime: 99.99,
+    responseTime: 89,
+    lastChecked: "5s ago",
   },
 ];
 
-const Dashboard = () => {
-  const upCount = monitors.filter((m) => m.status === "up").length;
-  const downCount = monitors.filter((m) => m.status === "down").length;
-  const avgUptime = monitors.reduce((acc, m) => acc + m.uptime, 0) / monitors.length;
+const recentIncidents = [
+  {
+    id: "INC-2024-001",
+    title: "API Response Time Degradation",
+    description: "Elevated response times detected on the primary API cluster. Investigation in progress.",
+    status: "investigating" as const,
+    severity: "major" as const,
+    startedAt: "Today, 2:34 PM",
+    affectedMonitors: ["API Production", "Payment Gateway"],
+  },
+  {
+    id: "INC-2024-000",
+    title: "Database Connection Issues",
+    description: "Brief database connectivity issues caused by network congestion.",
+    status: "resolved" as const,
+    severity: "minor" as const,
+    startedAt: "Yesterday, 9:15 AM",
+    resolvedAt: "Yesterday, 9:45 AM",
+    affectedMonitors: ["Customer Portal"],
+  },
+];
 
+const uptimeData = Array.from({ length: 14 }, (_, i) => ({
+  date: new Date(Date.now() - (13 - i) * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+  uptime: 99 + Math.random() * 1,
+}));
+
+export default function Dashboard() {
   return (
-    <DashboardLayout>
-      <div className="space-y-8">
+    <div className="min-h-screen gradient-hero">
+      <Navbar />
+      
+      <main className="pt-24 pb-16 px-4">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
           <div>
-            <h1 className="font-heading text-3xl font-bold">Dashboard</h1>
-            <p className="text-muted-foreground">Monitor your services in real-time</p>
+            <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
+            <p className="text-muted-foreground">Welcome back! Here's an overview of your monitoring status.</p>
           </div>
-          <Button variant="link">
-            <Plus className="w-4 h-4" />
+          <Button variant="default">
+            <Plus className="w-4 h-4 mr-2" />
             Add Monitor
           </Button>
         </div>
+        <Dialog>
+          <DialogTrigger>Open</DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Are you absolutely sure?</DialogTitle>
+              <DialogDescription>
+                This action cannot be undone. This will permanently delete your account
+                and remove your data from our servers.
+              </DialogDescription>
+            </DialogHeader>
+          </DialogContent>
+        </Dialog>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard
-            title="Total Monitors"
-            value={monitors.length}
-            icon={Activity}
-          />
-          <StatCard
-            title="Currently Up"
-            value={upCount}
-            change={`${downCount} down`}
-            changeType={downCount > 0 ? "negative" : "positive"}
-            icon={TrendingUp}
-          />
-          <StatCard
-            title="Average Uptime"
-            value={`${avgUptime.toFixed(2)}%`}
-            change="+0.05%"
-            changeType="positive"
-            icon={Clock}
-          />
-          <StatCard
-            title="Open Incidents"
-            value={downCount}
-            changeType={downCount > 0 ? "negative" : "neutral"}
-            icon={AlertTriangle}
-          />
-        </div>
 
-        {/* Monitors List */}
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-heading text-xl font-semibold">Monitors</h2>
-            <Button variant="ghost" size="sm">
-              View all
-            </Button>
-          </div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {monitors.map((monitor) => (
-              <MonitorCard key={monitor.name} {...monitor} />
-            ))}
-          </div>
-        </div>
-      </div>
-    </DashboardLayout>
+        {/* Content Grid */}
+        {/* Monitors Section */}
+      </main>
+
+      <Footer />
+    </div>
   );
-};
-
-export default Dashboard;
+}

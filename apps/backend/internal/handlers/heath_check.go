@@ -3,8 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
-
-	"github.com/sthits123/uptime-monitor/internal/errs"
+    "github.com/sthits123/uptime-monitor/internal/errs"
 )
 
 func Healthcheck(w http.ResponseWriter, r *http.Request) {

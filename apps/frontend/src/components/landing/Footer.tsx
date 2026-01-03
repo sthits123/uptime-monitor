@@ -11,7 +11,7 @@ const Footer = () => {
               <div className="w-8 h-8 rounded-lg gradient-hero flex items-center justify-center">
                 <Activity className="w-5 h-5 text-primary-foreground" />
               </div>
-              <span className="font-heading font-bold text-xl">PingGuard</span>
+              <span className="font-heading font-bold text-xl">UptimeMonitor</span>
             </Link>
             <p className="text-muted-foreground text-sm">
               Reliable uptime monitoring for your entire infrastructure.
@@ -50,7 +50,7 @@ const Footer = () => {
         </div>
 
         <div className="pt-8 border-t border-border flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
-          <p>© 2024 PingGuard. All rights reserved.</p>
+          <p>© 2024 UptimeMonitor. All rights reserved.</p>
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-success" />
             <span>All systems operational</span>
