@@ -2,28 +2,30 @@ package workers
 
 import (
 	"context"
+	"fmt"
 
 	goredis "github.com/redis/go-redis/v9"
-	"github.com/sthits123/uptime-monitor/internal/redis"
+	"github.com/sthits123/uptime-monitor/internal/repositories"
 )
 
 func StartRegionWorkers(
 	ctx context.Context,
 	rdb *goredis.Client,
+	tickRepo *repositories.WebsiteTickRepo,
+	regionRepo *repositories.RegionRepo,
 	region string,
-	instances int,
+	count int,
 ) {
-
-	if err := redis.EnsureGroup(ctx, rdb,redis.StreamName, region); err != nil {
-		panic(err)
-	}
-
-	for i := 0; i < instances; i++ {
+	for i := 0; i < count; i++ {
 		worker := &Worker{
-			Redis:    rdb,
-			Group:    region,
-			Consumer: region + "-" + string(rune(i)),
+			Redis:      rdb,
+			TickRepo:   tickRepo,
+			RegionRepo: regionRepo,
+			Region:     region,
+			Group:      region,
+			Consumer:   fmt.Sprintf("%s-worker-%d", region, i),
 		}
+
 		go worker.Run(ctx)
 	}
 }

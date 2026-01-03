@@ -3,28 +3,44 @@ package workers
 import (
 	"net/http"
 	"time"
-
 )
 
-func CheckWebsite(url string) (status string,latency int64){
-    start:=time.Now()
+type CheckResult struct {
+	WebsiteID     string
+	ResponseTime  int
+	Status        string
+	ResponseCode *int
+	ErrorMessage *string
+}
 
-	client:=http.Client{
-		Timeout:5*time.Second,
+func CheckWebsite(url string, websiteID string) CheckResult {
+	start := time.Now()
+
+	resp, err := http.Get(url)
+	elapsed := time.Since(start).Milliseconds()
+
+	if err != nil {
+		msg := err.Error()
+		return CheckResult{
+			WebsiteID:    websiteID,
+			ResponseTime: int(elapsed),
+			Status:       "down",
+			ErrorMessage: &msg,
+		}
 	}
 
-	resp,err:=client.Get(url)
-	latency = time.Since(start).Milliseconds()
-    
-	if err!=nil{
-		return "Down",latency
-	}
-    
-	if resp.StatusCode>=200 && resp.StatusCode < 400{
-       return "Up",latency
+	defer resp.Body.Close()
+
+	code := resp.StatusCode
+	status := "up"
+	if code >= 500 {
+		status = "down"
 	}
 
-	return "Down",latency
-
-
+	return CheckResult{
+		WebsiteID:     websiteID,
+		ResponseTime:  int(elapsed),
+		Status:        status,
+		ResponseCode:  &code,
+	}
 }

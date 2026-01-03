@@ -27,6 +27,12 @@ func (h *WebsiteHandler) CreateWebsite(w http.ResponseWriter, r *http.Request, u
 		http.Error(w, "invalid json body", http.StatusBadRequest)
 		return
 	}
+
+	if err := input.Validate(); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
 	
 
 	website := models.Website{
@@ -52,15 +58,16 @@ func (h *WebsiteHandler) CreateWebsite(w http.ResponseWriter, r *http.Request, u
 func (h *WebsiteHandler) GetWebsiteStatus(w http.ResponseWriter, r *http.Request, userID, websiteID string) {
 	website, err := h.websiteRepo.FindByID(r.Context(), userID, websiteID)
 	if err != nil {
-		http.Error(w, "not found", http.StatusNotFound)
+		log.Print(err)
+		http.Error(w, "website not found", http.StatusNotFound)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
-		"id":      website.ID,
-		"url":     website.URL,
-		"user_id": website.UserID,
-		"latest_tick": website.LatestTick, 
+		"id":        website.ID,
+		"url":       website.URL,
+		"user_id":   website.UserID,
+		"timeAdded": website.TimeAdded,
 	})
 }

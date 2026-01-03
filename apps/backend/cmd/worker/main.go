@@ -8,8 +8,9 @@ import (
 	"strconv"
 	"syscall"
 
-	goredis "github.com/redis/go-redis/v9"
-	"github.com/sthits123/uptime-monitor/internal/redis"
+	"github.com/sthits123/uptime-monitor/internal/database"
+	goredis "github.com/sthits123/uptime-monitor/internal/redis"
+	"github.com/sthits123/uptime-monitor/internal/repositories"
 	"github.com/sthits123/uptime-monitor/internal/workers"
 )
 
@@ -29,19 +30,33 @@ func main() {
 		addr = "localhost:6379"
 	}
 
-	rdb := goredis.NewClient(&goredis.Options{
-		Addr: addr,
-	})
+	db, err := database.New()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	tickRepo := repositories.NewWebsiteTickRepo(db.Pool)
+	regionRepo := repositories.NewRegionRepo(db.Pool)
+
+	rdb := goredis.NewRedisClient(addr)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	
-	if err := redis.EnsureGroup(ctx, rdb, "uptime_monitor", region); err != nil {
+	// Group per region
+	if err := goredis.EnsureGroup(ctx, rdb, goredis.StreamName, region); err != nil {
 		log.Fatal(err)
 	}
 
-	workers.StartRegionWorkers(ctx, rdb, region, count)
+	workers.StartRegionWorkers(
+		ctx,
+		rdb,
+		tickRepo,
+		regionRepo,
+		region,
+		count,
+	)
 
 	log.Printf("workers running (region=%s, count=%d)", region, count)
 
