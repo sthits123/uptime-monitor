@@ -23,21 +23,21 @@ type Response struct {
 func main() {
 	//Start the databse
 	db, err := database.New()
-
+	secret := os.Getenv("JWT_SECRET")
 	if err != nil {
 		log.Fatal("failed to connect to database: ", err)
 	}
 	defer db.Close()
-    
-	userRepo:=repositories.NewUserRepo(db.Pool)
-	authHandler := handlers.NewAuthHandler(userRepo)
-  
+
+	userRepo := repositories.NewUserRepo(db.Pool)
+	authHandler := handlers.NewAuthHandler(userRepo, secret)
+
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("GET /api/v1/healthcheck", handlers.Healthcheck)
-    mux.HandleFunc("POST /api/v1/signup",     authHandler.Signup)
+	mux.HandleFunc("POST /api/v1/signup", authHandler.Signup)
+	mux.HandleFunc("POST /api/v1/signin", authHandler.Signin)
 
-	
 	server := &http.Server{
 		Addr:    ":8080",
 		Handler: mux,

@@ -1,234 +1,252 @@
-import { Activity, CheckCircle, Clock } from "lucide-react";
+import { StatusIndicator } from "@/components/StatusIndicator";
+import { Activity, ExternalLink, Clock, CheckCircle, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Link } from "react-router-dom";
 
-const services = [
+type ServiceStatus = "up" | "down" | "degraded" | "maintenance";
+
+interface Service {
+  name: string;
+  description: string;
+  status: ServiceStatus;
+  uptime: number;
+}
+
+const services: Service[] = [
   {
     name: "API",
-    status: "operational",
+    description: "Core API infrastructure",
+    status: "up",
     uptime: 99.99,
-    history: Array.from({ length: 90 }, () => (Math.random() > 0.02 ? "up" : "down")),
   },
   {
     name: "Web Application",
-    status: "operational",
-    uptime: 99.95,
-    history: Array.from({ length: 90 }, () => (Math.random() > 0.03 ? "up" : "down")),
+    description: "Customer-facing web app",
+    status: "up",
+    uptime: 99.97,
+  },
+  {
+    name: "Customer Portal",
+    description: "Customer dashboard and settings",
+    status: "degraded",
+    uptime: 99.45,
+  },
+  {
+    name: "Payment Processing",
+    description: "Billing and payment systems",
+    status: "up",
+    uptime: 99.99,
   },
   {
     name: "CDN",
-    status: "degraded",
-    uptime: 98.5,
-    history: Array.from({ length: 90 }, () => (Math.random() > 0.1 ? "up" : "down")),
+    description: "Content delivery network",
+    status: "up",
+    uptime: 100,
   },
   {
-    name: "Database",
-    status: "operational",
-    uptime: 99.99,
-    history: Array.from({ length: 90 }, () => (Math.random() > 0.01 ? "up" : "down")),
-  },
-  {
-    name: "Authentication",
-    status: "outage",
-    uptime: 95.2,
-    history: Array.from({ length: 90 }, () => (Math.random() > 0.3 ? "up" : "down")),
-  },
-  {
-    name: "Email Service",
-    status: "operational",
-    uptime: 99.9,
-    history: Array.from({ length: 90 }, () => (Math.random() > 0.02 ? "up" : "down")),
+    name: "Email Delivery",
+    description: "Transactional email service",
+    status: "up",
+    uptime: 99.98,
   },
 ];
 
-const recentIncidents = [
+const recentUpdates = [
   {
-    date: "January 15, 2024",
-    title: "Authentication Service Outage",
+    date: "Today, 2:34 PM",
+    title: "Investigating: Customer Portal Performance",
     status: "investigating",
-    updates: [
-      { time: "14:32", message: "We are investigating issues with the authentication service." },
-      { time: "14:45", message: "The issue has been identified. A fix is being deployed." },
-    ],
+    description: "We are investigating reports of slow response times on the customer portal. Our team is actively working on identifying the root cause.",
   },
   {
-    date: "January 14, 2024",
-    title: "Database Connection Issues",
+    date: "Yesterday, 9:45 AM",
+    title: "Resolved: Database Connectivity",
     status: "resolved",
-    updates: [
-      { time: "09:15", message: "Database connections are timing out." },
-      { time: "09:30", message: "Root cause identified: connection pool exhaustion." },
-      { time: "09:45", message: "Issue resolved. All systems operational." },
-    ],
+    description: "The database connectivity issues have been fully resolved. All systems are now operating normally.",
+  },
+  {
+    date: "Jan 1, 2025, 3:30 PM",
+    title: "Resolved: SSL Certificate Renewal",
+    status: "resolved",
+    description: "SSL certificate has been successfully renewed for all domains.",
   },
 ];
 
-const Status = () => {
-  const allOperational = services.every((s) => s.status === "operational");
-  const hasOutage = services.some((s) => s.status === "outage");
+type DayStatus = "up" | "degraded" | "down";
+
+const uptimeDays: { status: DayStatus }[] = Array.from({ length: 90 }, () => ({
+  status: (Math.random() > 0.02 ? "up" : Math.random() > 0.5 ? "degraded" : "down") as DayStatus,
+}));
+
+export default function Status() {
+  const hasDown = services.some(s => s.status === "down");
+  const hasDegraded = services.some(s => s.status === "degraded");
+  const overallStatus: "up" | "down" | "degraded" = hasDown 
+    ? "down" 
+    : hasDegraded 
+      ? "degraded" 
+      : "up";
+
+  const overallUptime = (services.reduce((acc, s) => acc + s.uptime, 0) / services.length).toFixed(2);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen gradient-hero">
       {/* Header */}
-      <header className="border-b border-border">
-        <div className="container mx-auto px-4 py-6">
+      <header className="border-b border-border/50 bg-card/50 backdrop-blur-xl">
+        <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg gradient-hero flex items-center justify-center">
-                <Activity className="w-6 h-6 text-primary-foreground" />
+            <Link to="/" className="flex items-center gap-2">
+              <div className="w-8 h-8 gradient-primary rounded-lg flex items-center justify-center">
+                <Activity className="w-5 h-5 text-primary-foreground" />
               </div>
-              <div>
-                <h1 className="font-heading font-bold text-xl">PingGuard Status</h1>
-                <p className="text-sm text-muted-foreground">Service health dashboard</p>
-              </div>
-            </div>
-            <a href="/" className="text-sm text-primary hover:underline">
-              ← Back to PingGuard
-            </a>
+              <span className="text-xl font-bold">UptimeMonitor</span>
+            </Link>
+            <span className="text-sm text-muted-foreground">System Status</span>
           </div>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8 max-w-4xl">
+      <main className="container mx-auto px-4 py-12">
         {/* Overall Status Banner */}
-        <div
-          className={cn(
-            "rounded-2xl p-8 mb-8 text-center",
-            allOperational
-              ? "bg-success/10 border border-success/20"
-              : hasOutage
-              ? "bg-destructive/10 border border-destructive/20"
-              : "bg-warning/10 border border-warning/20"
-          )}
-        >
-          <div
-            className={cn(
-              "w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center",
-              allOperational ? "bg-success" : hasOutage ? "bg-destructive" : "bg-warning"
-            )}
-          >
-            {allOperational ? (
-              <CheckCircle className="w-8 h-8 text-success-foreground" />
-            ) : (
-              <Activity className="w-8 h-8 text-destructive-foreground" />
-            )}
-          </div>
-          <h2 className="font-heading text-2xl font-bold mb-2">
-            {allOperational
-              ? "All Systems Operational"
-              : hasOutage
-              ? "Service Outage Detected"
-              : "Degraded Performance"}
-          </h2>
+        <div className={cn(
+          "glass-card rounded-2xl p-8 mb-12 text-center",
+          overallStatus === "up" && "border-primary/50",
+          overallStatus === "degraded" && "border-warning/50",
+          overallStatus === "down" && "border-destructive/50"
+        )}>
+          <StatusIndicator status={overallStatus} size="lg" className="justify-center mb-4" />
+          <h1 className="text-4xl font-bold mb-2">
+            {overallStatus === "up" && "All Systems Operational"}
+            {overallStatus === "degraded" && "Partial System Degradation"}
+            {overallStatus === "down" && "System Outage Detected"}
+          </h1>
           <p className="text-muted-foreground">
-            Last updated: {new Date().toLocaleString()}
+            Last updated: {new Date().toLocaleString()} • Overall uptime: {overallUptime}%
           </p>
         </div>
 
-        {/* Services Status */}
-        <section className="mb-12">
-          <h3 className="font-heading text-xl font-semibold mb-4">Services</h3>
-          <div className="bg-card rounded-xl border border-border overflow-hidden">
-            {services.map((service, index) => (
+        {/* 90-Day Uptime Overview */}
+        <div className="glass-card rounded-xl p-6 mb-12">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold">90-Day Uptime</h2>
+            <span className="text-sm text-muted-foreground">{overallUptime}% uptime</span>
+          </div>
+          <div className="flex gap-[2px]">
+            {uptimeDays.map((day, i) => (
               <div
-                key={service.name}
+                key={i}
                 className={cn(
-                  "p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4",
-                  index > 0 && "border-t border-border"
+                  "flex-1 h-8 rounded-sm transition-opacity hover:opacity-80",
+                  day.status === "up" && "bg-primary",
+                  day.status === "degraded" && "bg-warning",
+                  day.status === "down" && "bg-destructive"
                 )}
-              >
-                <div className="flex items-center gap-3">
-                  <div
-                    className={cn(
-                      "w-3 h-3 rounded-full",
-                      service.status === "operational" && "bg-success",
-                      service.status === "degraded" && "bg-warning",
-                      service.status === "outage" && "bg-destructive"
-                    )}
-                  />
-                  <span className="font-medium">{service.name}</span>
-                  <span
-                    className={cn(
-                      "text-sm capitalize",
-                      service.status === "operational" && "text-success",
-                      service.status === "degraded" && "text-warning",
-                      service.status === "outage" && "text-destructive"
-                    )}
-                  >
-                    {service.status}
-                  </span>
-                </div>
+                title={`Day ${90 - i}: ${day.status}`}
+              />
+            ))}
+          </div>
+          <div className="flex justify-between mt-2 text-xs text-muted-foreground">
+            <span>90 days ago</span>
+            <span>Today</span>
+          </div>
+        </div>
+
+        {/* Services List */}
+        <div className="glass-card rounded-xl overflow-hidden mb-12">
+          <div className="p-6 border-b border-border/50">
+            <h2 className="text-xl font-semibold">Current Status by Service</h2>
+          </div>
+          <div className="divide-y divide-border/50">
+            {services.map((service, index) => (
+              <div key={index} className="p-6 flex items-center justify-between hover:bg-secondary/30 transition-colors">
                 <div className="flex items-center gap-4">
-                  <div className="flex gap-0.5">
-                    {service.history.slice(-30).map((day, i) => (
-                      <div
-                        key={i}
-                        className={cn(
-                          "w-1 h-6 rounded-sm",
-                          day === "up" ? "bg-success/70" : "bg-destructive/70"
-                        )}
-                        title={`Day ${i + 1}`}
-                      />
-                    ))}
-                  </div>
-                  <span className="text-sm text-muted-foreground w-16 text-right">
-                    {service.uptime}%
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-          <p className="text-sm text-muted-foreground mt-2 text-center">
-            Uptime over the last 30 days
-          </p>
-        </section>
-
-        {/* Recent Incidents */}
-        <section>
-          <h3 className="font-heading text-xl font-semibold mb-4">Recent Incidents</h3>
-          <div className="space-y-6">
-            {recentIncidents.map((incident) => (
-              <div key={incident.title} className="bg-card rounded-xl border border-border p-6">
-                <div className="flex items-start justify-between mb-4">
+                  <StatusIndicator status={service.status} size="md" />
                   <div>
-                    <p className="text-sm text-muted-foreground mb-1">{incident.date}</p>
-                    <h4 className="font-semibold">{incident.title}</h4>
+                    <h3 className="font-semibold">{service.name}</h3>
+                    <p className="text-sm text-muted-foreground">{service.description}</p>
                   </div>
-                  <span
-                    className={cn(
-                      "px-3 py-1 rounded-full text-xs font-medium capitalize",
-                      incident.status === "resolved"
-                        ? "bg-success/10 text-success"
-                        : "bg-warning/10 text-warning"
-                    )}
-                  >
-                    {incident.status}
-                  </span>
                 </div>
-                <div className="space-y-3 border-l-2 border-border pl-4">
-                  {incident.updates.map((update, i) => (
-                    <div key={i} className="flex gap-3 text-sm">
-                      <span className="text-muted-foreground flex items-center gap-1 shrink-0">
-                        <Clock className="w-3 h-3" />
-                        {update.time}
-                      </span>
-                      <p>{update.message}</p>
-                    </div>
-                  ))}
+                <div className="text-right">
+                  <p className={cn(
+                    "font-semibold",
+                    service.uptime >= 99.9 && "text-primary",
+                    service.uptime >= 99 && service.uptime < 99.9 && "text-warning",
+                    service.uptime < 99 && "text-destructive"
+                  )}>
+                    {service.uptime}%
+                  </p>
+                  <p className="text-xs text-muted-foreground">uptime</p>
                 </div>
               </div>
             ))}
           </div>
-        </section>
+        </div>
 
-        {/* Subscribe */}
-        <section className="mt-12 text-center py-8 border-t border-border">
-          <p className="text-muted-foreground">
-            Subscribe to updates via email, SMS, or webhook
+        {/* Recent Updates */}
+        <div className="glass-card rounded-xl overflow-hidden">
+          <div className="p-6 border-b border-border/50">
+            <h2 className="text-xl font-semibold">Recent Updates</h2>
+          </div>
+          <div className="divide-y divide-border/50">
+            {recentUpdates.map((update, index) => (
+              <div key={index} className="p-6">
+                <div className="flex items-start gap-4">
+                  <div className={cn(
+                    "w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0",
+                    update.status === "resolved" && "bg-primary/20",
+                    update.status === "investigating" && "bg-warning/20",
+                    update.status === "ongoing" && "bg-destructive/20"
+                  )}>
+                    {update.status === "resolved" && <CheckCircle className="w-5 h-5 text-primary" />}
+                    {update.status === "investigating" && <Clock className="w-5 h-5 text-warning" />}
+                    {update.status === "ongoing" && <AlertTriangle className="w-5 h-5 text-destructive" />}
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">{update.date}</p>
+                    <h3 className="font-semibold mb-2">{update.title}</h3>
+                    <p className="text-sm text-muted-foreground">{update.description}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Subscribe Section */}
+        <div className="mt-12 text-center">
+          <p className="text-muted-foreground mb-4">
+            Want to receive status updates?
           </p>
-        </section>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <a href="#" className="flex items-center gap-2 text-primary hover:underline">
+              <ExternalLink className="w-4 h-4" />
+              Subscribe via Email
+            </a>
+            <span className="text-muted-foreground">•</span>
+            <a href="#" className="flex items-center gap-2 text-primary hover:underline">
+              <ExternalLink className="w-4 h-4" />
+              RSS Feed
+            </a>
+          </div>
+        </div>
       </main>
+
+      {/* Footer */}
+      <footer className="border-t border-border/50 bg-card/50 mt-12">
+        <div className="container mx-auto px-4 py-6">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              Powered by{" "}
+              <Link to="/" className="text-primary hover:underline font-medium">
+                UptimeMonitor
+              </Link>
+            </div>
+            <div className="text-sm text-muted-foreground">
+              © 2025 Example Inc. All rights reserved.
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
-};
-
-export default Status;
+}

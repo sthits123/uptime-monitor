@@ -16,7 +16,6 @@ const userIDKey ctxKey = "userId"
 func getSecret() []byte {
 	secret := os.Getenv("JWT_SECRET")
 	if secret == "" {
-		// In production, this should return an error instead
 		return []byte("supersecret")
 	}
 	return []byte(secret)

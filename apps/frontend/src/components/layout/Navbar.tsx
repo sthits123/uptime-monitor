@@ -29,7 +29,7 @@ const Navbar = () => {
             <div className="w-8 h-8 rounded-lg gradient-hero flex items-center justify-center">
               <Activity className="w-5 h-5 text-primary-foreground" />
             </div>
-            <span className="font-heading font-bold text-xl">PingGuard</span>
+            <span className="font-heading font-bold text-xl">UptimeMonitor</span>
           </Link>
 
           {/* Desktop Navigation */}

@@ -1,126 +1,177 @@
-import DashboardLayout from "@/components/layout/DashboardLayout";
-import StatCard from "@/components/dashboard/StatCard";
-import MonitorCard from "@/components/dashboard/MonitorCard";
+import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/Footer";
+import { StatsCard } from "@/components/StatsCard";
+import { MonitorCard } from "@/components/MonitorCard";
+import { IncidentCard } from "@/components/IncidentCard";
+import { UptimeChart } from "@/components/UptimeChart";
+import { 
+  Activity, 
+  Shield, 
+  Clock, 
+  AlertTriangle,
+  Plus,
+  Filter,
+  Search
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Activity, AlertTriangle, Clock, Plus, TrendingUp } from "lucide-react";
+import { Input } from "@/components/ui/input";
 
 const monitors = [
   {
-    name: "Production API",
+    name: "API Production",
     url: "https://api.example.com",
     status: "up" as const,
-    uptime: 99.98,
-    responseTime: 145,
-    lastChecked: "30s ago",
-  },
-  {
-    name: "Main Website",
-    url: "https://example.com",
-    status: "up" as const,
-    uptime: 99.95,
-    responseTime: 89,
-    lastChecked: "15s ago",
-  },
-  {
-    name: "CDN",
-    url: "https://cdn.example.com",
-    status: "degraded" as const,
-    uptime: 98.5,
-    responseTime: 456,
-    lastChecked: "45s ago",
-  },
-  {
-    name: "Database Cluster",
-    url: "https://db.example.com:5432",
-    status: "up" as const,
     uptime: 99.99,
-    responseTime: 12,
+    responseTime: 124,
     lastChecked: "10s ago",
   },
   {
-    name: "Auth Service",
-    url: "https://auth.example.com",
-    status: "down" as const,
-    uptime: 95.2,
-    responseTime: 0,
-    lastChecked: "5m ago",
+    name: "Marketing Website",
+    url: "https://www.example.com",
+    status: "up" as const,
+    uptime: 99.97,
+    responseTime: 245,
+    lastChecked: "15s ago",
+  },
+  {
+    name: "Customer Portal",
+    url: "https://app.example.com",
+    status: "degraded" as const,
+    uptime: 99.45,
+    responseTime: 890,
+    lastChecked: "8s ago",
   },
   {
     name: "Payment Gateway",
-    url: "https://payments.example.com",
+    url: "https://pay.example.com",
     status: "up" as const,
-    uptime: 99.97,
-    responseTime: 234,
-    lastChecked: "20s ago",
+    uptime: 99.99,
+    responseTime: 89,
+    lastChecked: "5s ago",
   },
 ];
 
-const Dashboard = () => {
-  const upCount = monitors.filter((m) => m.status === "up").length;
-  const downCount = monitors.filter((m) => m.status === "down").length;
-  const avgUptime = monitors.reduce((acc, m) => acc + m.uptime, 0) / monitors.length;
+const recentIncidents = [
+  {
+    id: "INC-2024-001",
+    title: "API Response Time Degradation",
+    description: "Elevated response times detected on the primary API cluster. Investigation in progress.",
+    status: "investigating" as const,
+    severity: "major" as const,
+    startedAt: "Today, 2:34 PM",
+    affectedMonitors: ["API Production", "Payment Gateway"],
+  },
+  {
+    id: "INC-2024-000",
+    title: "Database Connection Issues",
+    description: "Brief database connectivity issues caused by network congestion.",
+    status: "resolved" as const,
+    severity: "minor" as const,
+    startedAt: "Yesterday, 9:15 AM",
+    resolvedAt: "Yesterday, 9:45 AM",
+    affectedMonitors: ["Customer Portal"],
+  },
+];
 
+const uptimeData = Array.from({ length: 14 }, (_, i) => ({
+  date: new Date(Date.now() - (13 - i) * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+  uptime: 99 + Math.random() * 1,
+}));
+
+export default function Dashboard() {
   return (
-    <DashboardLayout>
-      <div className="space-y-8">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="font-heading text-3xl font-bold">Dashboard</h1>
-            <p className="text-muted-foreground">Monitor your services in real-time</p>
-          </div>
-          <Button variant="link">
-            <Plus className="w-4 h-4" />
-            Add Monitor
-          </Button>
-        </div>
-
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard
-            title="Total Monitors"
-            value={monitors.length}
-            icon={Activity}
-          />
-          <StatCard
-            title="Currently Up"
-            value={upCount}
-            change={`${downCount} down`}
-            changeType={downCount > 0 ? "negative" : "positive"}
-            icon={TrendingUp}
-          />
-          <StatCard
-            title="Average Uptime"
-            value={`${avgUptime.toFixed(2)}%`}
-            change="+0.05%"
-            changeType="positive"
-            icon={Clock}
-          />
-          <StatCard
-            title="Open Incidents"
-            value={downCount}
-            changeType={downCount > 0 ? "negative" : "neutral"}
-            icon={AlertTriangle}
-          />
-        </div>
-
-        {/* Monitors List */}
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-heading text-xl font-semibold">Monitors</h2>
-            <Button variant="ghost" size="sm">
-              View all
+    <div className="min-h-screen gradient-hero">
+      <Navbar />
+      
+      <main className="pt-24 pb-16 px-4">
+        <div className="container mx-auto">
+          {/* Header */}
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
+            <div>
+              <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
+              <p className="text-muted-foreground">Welcome back! Here's an overview of your monitoring status.</p>
+            </div>
+            <Button variant="default">
+              <Plus className="w-4 h-4 mr-2" />
+              Add Monitor
             </Button>
           </div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {monitors.map((monitor) => (
-              <MonitorCard key={monitor.name} {...monitor} />
-            ))}
+
+          {/* Stats Grid */}
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <StatsCard
+              title="Total Monitors"
+              value={24}
+              subtitle="4 new this month"
+              icon={Activity}
+              trend={{ value: 12, isPositive: true }}
+            />
+            <StatsCard
+              title="Average Uptime"
+              value="99.94%"
+              subtitle="Last 30 days"
+              icon={Shield}
+              trend={{ value: 0.02, isPositive: true }}
+            />
+            <StatsCard
+              title="Avg Response Time"
+              value="145ms"
+              subtitle="Across all monitors"
+              icon={Clock}
+              trend={{ value: 8, isPositive: false }}
+            />
+            <StatsCard
+              title="Open Incidents"
+              value={1}
+              subtitle="1 investigating"
+              icon={AlertTriangle}
+            />
+          </div>
+
+          {/* Uptime Chart */}
+          <UptimeChart data={uptimeData} className="mb-8" />
+
+          {/* Content Grid */}
+          <div className="grid lg:grid-cols-3 gap-8">
+            {/* Monitors Section */}
+            <div className="lg:col-span-2">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold">Active Monitors</h2>
+                <div className="flex items-center gap-2">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input 
+                      placeholder="Search monitors..." 
+                      className="pl-9 w-48 bg-secondary/50"
+                    />
+                  </div>
+                  <Button variant="outline" size="icon">
+                    <Filter className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+              
+              <div className="grid gap-4">
+                {monitors.map((monitor, index) => (
+                  <MonitorCard key={index} {...monitor} />
+                ))}
+              </div>
+            </div>
+
+            {/* Recent Incidents Section */}
+            <div>
+              <h2 className="text-xl font-semibold mb-4">Recent Incidents</h2>
+              <div className="space-y-4">
+                {recentIncidents.map((incident) => (
+                  <IncidentCard key={incident.id} {...incident} />
+                ))}
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-    </DashboardLayout>
-  );
-};
+      </main>
 
-export default Dashboard;
+      <Footer />
+    </div>
+  );
+}
