@@ -117,3 +117,22 @@ func (h *WebsiteHandler) GetWebsiteTicks(w http.ResponseWriter, r *http.Request,
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(ticks)
 }
+
+func (h *WebsiteHandler) GetWebsiteRegionalStatus(w http.ResponseWriter, r *http.Request, userID, websiteID string) {
+
+	_, err := h.websiteRepo.FindByID(r.Context(), userID, websiteID)
+	if err != nil {
+		utils.SendJSONError(w, "Website not found", http.StatusNotFound)
+		return
+	}
+
+	statuses, err := h.tickRepo.GetLatestTicksByRegion(r.Context(), websiteID)
+	if err != nil {
+		log.Print(err)
+		utils.SendJSONError(w, "Could not fetch regional status", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(statuses)
+}
