@@ -38,11 +38,11 @@ const sizeConfig = {
   lg: { dot: "w-4 h-4", ring: "w-8 h-8", text: "text-base" },
 };
 
-export function StatusIndicator({ 
-  status, 
-  size = "md", 
+export function StatusIndicator({
+  status,
+  size = "md",
   showLabel = false,
-  className 
+  className
 }: StatusIndicatorProps) {
   const config = statusConfig[status];
   const sizes = sizeConfig[size];
@@ -51,7 +51,7 @@ export function StatusIndicator({
     <div className={cn("flex items-center gap-2", className)}>
       <div className="relative flex items-center justify-center">
         <div className={cn(
-          "absolute rounded-full animate-pulse-ring",
+          "absolute rounded-full animate-UptimeMonitor-ring",
           sizes.ring,
           config.ringColor
         )} />

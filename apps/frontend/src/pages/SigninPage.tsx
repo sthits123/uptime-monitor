@@ -1,32 +1,36 @@
-import { GalleryVerticalEnd } from "lucide-react"
-
-import { SigninForm } from "@/components/ui/signin-form"
+import { Activity } from "lucide-react";
+import { Link } from "react-router-dom";
+import { SigninForm } from "@/components/ui/signin-form";
 
 export default function SignInPage() {
   return (
-    <div className="grid min-h-svh lg:grid-cols-2">
-      <div className="flex flex-col gap-4 p-6 md:p-10">
-        <div className="flex justify-center gap-2 md:justify-start">
-          <a href="#" className="flex items-center gap-2 font-medium">
-            <div className="bg-primary text-primary-foreground flex size-6 items-center justify-center rounded-md">
-              <GalleryVerticalEnd className="size-4" />
-            </div>
-            Acme Inc.
-          </a>
-        </div>
-        <div className="flex flex-1 items-center justify-center">
-          <div className="w-full max-w-xs">
-            <SigninForm />
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-background via-background to-muted/20">
+      <div className="w-full max-w-md">
+        {/* Logo */}
+        <Link to="/" className="flex items-center justify-center gap-2 mb-8">
+          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center shadow-lg">
+            <Activity className="w-6 h-6 text-white" strokeWidth={2.5} />
           </div>
-        </div>
-      </div>
-      <div className="bg-muted relative hidden lg:block">
-        <img
-          src="/placeholder.svg"
-          alt="Image"
-          className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
-        />
+          <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-blue-500 bg-clip-text text-transparent">
+            UptimeMonitor
+          </span>
+        </Link>
+
+        {/* Form */}
+        <SigninForm />
+
+        {/* Footer */}
+        <p className="text-center text-sm text-muted-foreground mt-6">
+          By signing in, you agree to our{" "}
+          <a href="#" className="text-primary hover:underline">
+            Terms of Service
+          </a>{" "}
+          and{" "}
+          <a href="#" className="text-primary hover:underline">
+            Privacy Policy
+          </a>
+        </p>
       </div>
     </div>
-  )
+  );
 }

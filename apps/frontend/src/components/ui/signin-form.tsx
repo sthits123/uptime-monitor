@@ -13,38 +13,39 @@ import {
   FieldLabel,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { Signin } from "@/utils/auth"
+import { apiClient, setToken } from "@/lib/api"
 import { useNavigate } from "react-router-dom"
+import { toast } from "sonner"
+import { Loader2 } from "lucide-react"
 
 export function SigninForm(props: React.ComponentProps<typeof Card>) {
- const navigate=useNavigate()
+  const navigate = useNavigate()
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
-  const [confirmPassword, setConfirmPassword] = useState("")
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    setError(null)
 
-    if (password.length < 8) {
-      setError("Password must be at least 8 characters")
-      return
-    }
-
-    if (password !== confirmPassword) {
-      setError("Passwords do not match")
+    if (!username.trim() || !password.trim()) {
+      toast.error("Please fill in all fields")
       return
     }
 
     try {
       setLoading(true)
-      await Signin({ username, password })
-      alert("Signin successful")
-      navigate("/dashboard")
+      const response = await apiClient.signin({ username, password })
+
+      // Store JWT token
+      if (response.token) {
+        setToken(response.token)
+        toast.success(`Welcome back, ${response.username}!`)
+        navigate("/dashboard")
+      } else {
+        toast.error("Invalid response from server")
+      }
     } catch (err) {
-      setError("Signin failed")
+      toast.error(err instanceof Error ? err.message : "Signin failed")
     } finally {
       setLoading(false)
     }
@@ -54,7 +55,6 @@ export function SigninForm(props: React.ComponentProps<typeof Card>) {
     <Card {...props}>
       <CardHeader>
         <CardTitle>Login to your account</CardTitle>
-        
       </CardHeader>
 
       <CardContent>
@@ -65,10 +65,11 @@ export function SigninForm(props: React.ComponentProps<typeof Card>) {
               <Input
                 id="username"
                 type="text"
-                placeholder="demo"
+                placeholder="Enter your username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
+                disabled={loading}
               />
             </Field>
 
@@ -77,43 +78,31 @@ export function SigninForm(props: React.ComponentProps<typeof Card>) {
               <Input
                 id="password"
                 type="password"
+                placeholder="Enter your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-              />
-              <FieldDescription>
-                Must be at least 8 characters long.
-              </FieldDescription>
-            </Field>
-
-            <Field>
-              <FieldLabel htmlFor="confirm-password">
-                Confirm Password
-              </FieldLabel>
-              <Input
-                id="confirm-password"
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
+                disabled={loading}
               />
             </Field>
 
-            {error && (
-              <p className="text-sm text-red-500">{error}</p>
-            )}
-
             <Field>
-              <Button type="submit" disabled={loading}>
-                {loading ? "Logging..." : "Log into your account"}
+              <Button type="submit" disabled={loading} className="w-full">
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Signing in...
+                  </>
+                ) : (
+                  "Sign in"
+                )}
               </Button>
 
-              <Button variant="outline" type="button">
-                Sign up with Google
-              </Button>
-
-              <FieldDescription className="px-6 text-center">
-                Already have an account? <a href="/signin">Sign in</a>
+              <FieldDescription className="text-center mt-4">
+                Don't have an account?{" "}
+                <a href="/signup" className="text-primary hover:underline">
+                  Sign up
+                </a>
               </FieldDescription>
             </Field>
           </FieldGroup>

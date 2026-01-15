@@ -2,18 +2,18 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { StatusIndicator } from "@/components/StatusIndicator";
-import { 
-  Activity, 
-  Bell, 
-  Shield, 
-   
-  Globe, 
-  Clock, 
-  BarChart3, 
-  
+import { Link } from "react-router-dom";
+import {
+  Activity,
+  Bell,
+  Shield,
+
+  Globe,
+  Clock,
+  BarChart3,
+
   ArrowRight,
   Check,
-  Smartphone
 } from "lucide-react";
 
 const features = [
@@ -128,34 +128,40 @@ export default function Index() {
   return (
     <div className="min-h-screen gradient-hero">
       <Navbar />
-      
+
       {/* Hero Section */}
       <section className="pt-32 pb-20 px-4">
         <div className="container mx-auto text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-card mb-8 animate-fade-in">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 mb-8">
             <StatusIndicator status="up" size="sm" />
-            <span className="text-sm font-medium">All systems operational</span>
+            <span className="text-sm font-medium text-blue-600 dark:text-blue-400">All systems operational</span>
           </div>
-          
-          <h1 className="text-5xl md:text-7xl font-bold mb-6 animate-fade-in">
+
+          <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
             Monitor Everything.
             <br />
-            <span className="text-gradient">Miss Nothing.</span>
+            <span className="bg-gradient-to-r from-blue-600 to-blue-500 bg-clip-text text-transparent">
+              Miss Nothing.
+            </span>
           </h1>
-          
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-10 animate-fade-in">
-            The all-in-one monitoring platform that helps you detect outages, 
+
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-10">
+            The all-in-one monitoring platform that helps you detect outages,
             respond faster, and keep your customers happy.
           </p>
-          
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in">
-            <Button variant="default" size="lg">
-              Start Free Trial
-              <ArrowRight className="w-5 h-5 ml-2" />
-            </Button>
-            <Button variant="default" size="lg">
-              View Demo
-            </Button>
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <Link to="/signup">
+              <Button size="lg" className="text-base px-8">
+                Start Free Trial
+                <ArrowRight className="w-5 h-5 ml-2" />
+              </Button>
+            </Link>
+            <Link to="/dashboard">
+              <Button variant="outline" size="lg" className="text-base px-8">
+                View Dashboard
+              </Button>
+            </Link>
           </div>
 
           <p className="text-sm text-muted-foreground mt-6">
@@ -190,7 +196,7 @@ export default function Index() {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {features.map((feature, index) => (
-              <div 
+              <div
                 key={index}
                 className="glass-card p-6 rounded-xl hover:border-primary/30 transition-all duration-300 group"
               >
@@ -303,11 +309,10 @@ export default function Index() {
 
           <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
             {pricingPlans.map((plan, index) => (
-              <div 
+              <div
                 key={index}
-                className={`glass-card p-8 rounded-2xl relative ${
-                  plan.popular ? 'border-primary glow-primary' : ''
-                }`}
+                className={`glass-card p-8 rounded-2xl relative ${plan.popular ? 'border-primary glow-primary' : ''
+                  }`}
               >
                 {plan.popular && (
                   <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 gradient-primary rounded-full text-sm font-semibold text-primary-foreground">
@@ -332,8 +337,8 @@ export default function Index() {
                   ))}
                 </ul>
 
-                <Button 
-                  variant={plan.popular ? "default" : "outline"} 
+                <Button
+                  variant={plan.popular ? "default" : "outline"}
                   className="w-full"
                 >
                   {plan.name === "Enterprise" ? "Contact Sales" : "Get Started"}
@@ -376,24 +381,27 @@ export default function Index() {
       {/* CTA Section */}
       <section className="py-24 px-4">
         <div className="container mx-auto">
-          <div className="glass-card rounded-3xl p-12 text-center glow-primary relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-transparent to-primary/10" />
+          <div className="rounded-3xl p-12 text-center relative overflow-hidden bg-primary text-primary-foreground shadow-2xl">
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-400/20 to-transparent" />
             <div className="relative z-10">
               <h2 className="text-4xl md:text-5xl font-bold mb-6">
                 Ready to never miss an outage again?
               </h2>
-              <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-10">
+              <p className="text-xl opacity-90 max-w-2xl mx-auto mb-10">
                 Join 10,000+ teams who trust UptimeMonitor to keep their services running smoothly.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <Button variant="default" size="lg">
-                  Start Your Free Trial
-                  <ArrowRight className="w-5 h-5 ml-2" />
-                </Button>
-                <Button variant="default" size="lg">
-                  <Smartphone className="w-5 h-5 mr-2" />
-                  Book a Demo
-                </Button>
+                <Link to="/signup">
+                  <Button variant="secondary" size="lg" className="text-base px-8 font-bold">
+                    Start Your Free Trial
+                    <ArrowRight className="w-5 h-5 ml-2" />
+                  </Button>
+                </Link>
+                <Link to="/dashboard">
+                  <Button variant="outline" size="lg" className="text-base px-8 font-bold bg-white/10 border-white/20 hover:bg-white/20 text-white">
+                    View Pricing
+                  </Button>
+                </Link>
               </div>
             </div>
           </div>

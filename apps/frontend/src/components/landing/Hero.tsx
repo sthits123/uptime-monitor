@@ -28,7 +28,7 @@ const Hero = () => {
 
           {/* Subheadline */}
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 animate-fade-in" style={{ animationDelay: "0.2s" }}>
-            UptimeMonitor monitors your websites, APIs, and servers around the clock. 
+            UptimeMonitor monitors your websites, APIs, and servers around the clock.
             Get instant alerts via SMS, email, Slack, and more when something goes wrong.
           </p>
 
@@ -73,7 +73,7 @@ const Hero = () => {
                 <div className="w-3 h-3 rounded-full bg-success" />
                 <span className="ml-4 text-sm text-muted-foreground">dashboard.UptimeMonitor.io</span>
               </div>
-              
+
               {/* Mock Dashboard Content */}
               <div className="p-6 space-y-4">
                 <div className="flex items-center justify-between">
@@ -81,9 +81,9 @@ const Hero = () => {
                     <h3 className="font-semibold">All Systems Operational</h3>
                     <p className="text-sm text-muted-foreground">12 monitors • 99.98% uptime</p>
                   </div>
-                  <div className="w-3 h-3 rounded-full bg-success pulse-dot" />
+                  <div className="w-3 h-3 rounded-full bg-success UptimeMonitor-dot" />
                 </div>
-                
+
                 {/* Mock Monitor Bars */}
                 <div className="space-y-3">
                   {["api.example.com", "app.example.com", "cdn.example.com"].map((name, i) => (
@@ -94,9 +94,8 @@ const Hero = () => {
                         {Array.from({ length: 30 }).map((_, j) => (
                           <div
                             key={j}
-                            className={`w-1.5 h-6 rounded-sm ${
-                              Math.random() > 0.05 ? "bg-success/80" : "bg-destructive/80"
-                            }`}
+                            className={`w-1.5 h-6 rounded-sm ${Math.random() > 0.05 ? "bg-success/80" : "bg-destructive/80"
+                              }`}
                           />
                         ))}
                       </div>

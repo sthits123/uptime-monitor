@@ -1,42 +1,71 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+/* Custom Gradients */
+.gradient-hero {
+  background: linear-gradient(135deg, 
+    hsl(var(--background)) 0%, 
+    hsl(var(--muted) / 0.3) 50%, 
+    hsl(var(--background)) 100%
+  );
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+.gradient-primary {
+  background: linear-gradient(135deg, 
+    hsl(var(--primary)) 0%, 
+    hsl(var(--primary) / 0.8) 100%
+  );
 }
 
-@keyframes logo-spin {
+.text-gradient {
+  background: linear-gradient(135deg, 
+    hsl(var(--primary)) 0%, 
+    hsl(var(--chart-1)) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Glass Morphism */
+.glass-card {
+  background: hsl(var(--card) / 0.6);
+  backdrop-filter: blur(12px);
+  border: 1px solid hsl(var(--border) / 0.5);
+  transition: all 0.3s ease;
+}
+
+.glass-card:hover {
+  background: hsl(var(--card) / 0.8);
+  border-color: hsl(var(--primary) / 0.3);
+  transform: translateY(-2px);
+}
+
+/* Glow Effects */
+.glow-primary {
+  box-shadow: 0 0 20px hsl(var(--primary) / 0.2);
+}
+
+.glow-primary:hover {
+  box-shadow: 0 0 30px hsl(var(--primary) / 0.3);
+}
+
+/* Animations */
+@keyframes fade-in {
   from {
-    transform: rotate(0deg);
+    opacity: 0;
+    transform: translateY(10px);
   }
   to {
-    transform: rotate(360deg);
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+.animate-fade-in {
+  animation: fade-in 0.6s ease-out;
 }
 
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
+/* Smooth Transitions */
+* {
+  transition-property: color, background-color, border-color, transform, box-shadow;
+  transition-duration: 200ms;
+  transition-timing-function: ease-in-out;
 }
