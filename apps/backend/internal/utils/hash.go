@@ -2,7 +2,8 @@ package utils
 
 import (
 	"log"
-    "github.com/alexedwards/argon2id"
+
+	"github.com/alexedwards/argon2id"
 )
 
 func HashPassword(password string) (string, error) {
@@ -13,17 +14,11 @@ func HashPassword(password string) (string, error) {
 	return hash, nil
 }
 
-func VerifyPassword(password string,hash string) (match bool){
-	
+func VerifyPassword(password string, hash string) (match bool) {
+
 	match, err := argon2id.ComparePasswordAndHash(password, hash)
 	if err != nil {
 		log.Print(err)
-	}
-
-	if match {
-		log.Println("Password is correct!")
-	} else {
-		log.Println("Password is incorrect.")
 	}
 
 	return match

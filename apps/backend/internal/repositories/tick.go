@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/sthits123/uptime-monitor/internal/models"
 )
 
 type WebsiteTickRepo struct {
@@ -83,4 +84,35 @@ func (r *WebsiteTickRepo) InsertUserTick(
 	)
 
 	return err
+}
+
+func (r *WebsiteTickRepo) ListByWebsiteID(ctx context.Context, websiteID string, limit int) ([]models.WebsiteTick, error) {
+	rows, err := r.db.Query(ctx, `
+		SELECT id, website_id, region_id, response_time_ms, status, created_at
+		FROM website_tick
+		WHERE website_id = $1
+		ORDER BY created_at DESC
+		LIMIT $2
+	`, websiteID, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var ticks []models.WebsiteTick
+	for rows.Next() {
+		var t models.WebsiteTick
+		if err := rows.Scan(
+			&t.ID,
+			&t.WebsiteID,
+			&t.RegionID,
+			&t.ResponseTimeMs,
+			&t.Status,
+			&t.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		ticks = append(ticks, t)
+	}
+	return ticks, nil
 }

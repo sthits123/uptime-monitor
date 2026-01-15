@@ -3,17 +3,18 @@ package utils
 import (
 	"encoding/json"
 	"net/http"
-    "github.com/sthits123/uptime-monitor/internal/validation"
 )
 
-func WriteError(w http.ResponseWriter, err error) {
+type ErrorResponse struct {
+	Message string `json:"message"`
+	Error   string `json:"error"`
+}
+
+func SendJSONError(w http.ResponseWriter, message string, statusCode int) {
 	w.Header().Set("Content-Type", "application/json")
-
-	if vErr, ok := err.(validation.ValidationError); ok {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(vErr)
-		return
-	}
-
-	w.WriteHeader(http.StatusInternalServerError)
+	w.WriteHeader(statusCode)
+	json.NewEncoder(w).Encode(ErrorResponse{
+		Message: message,
+		Error:   http.StatusText(statusCode),
+	})
 }
