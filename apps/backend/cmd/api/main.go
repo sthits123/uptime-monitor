@@ -85,6 +85,24 @@ func listWebsitesHistoryHandler(websiteHandler *handlers.WebsiteHandler) http.Ha
 	}
 }
 
+func listWebsitesRegionalStatusHandler(websiteHandler *handlers.WebsiteHandler) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		userID := middlewares.UserID(r)
+		if userID == "" {
+			http.Error(w, "unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		websiteID := r.PathValue("id")
+		if websiteID == "" {
+			http.Error(w, "website id is required", http.StatusBadRequest)
+			return
+		}
+
+		websiteHandler.GetWebsiteRegionalStatus(w, r, userID, websiteID)
+	}
+}
+
 func listWebsitesHandler(websiteHandler *handlers.WebsiteHandler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		userID := middlewares.UserID(r)
@@ -122,6 +140,7 @@ func main() {
 	mux.HandleFunc("GET /api/v1/websites/{id}", middlewares.Auth(getWebsiteStatusHandler(websiteHandler)).ServeHTTP)
 	mux.HandleFunc("DELETE /api/v1/websites/{id}", middlewares.Auth(deleteWebsiteHandler(websiteHandler)).ServeHTTP)
 	mux.HandleFunc("GET /api/v1/websites/{id}/history", middlewares.Auth(listWebsitesHistoryHandler(websiteHandler)).ServeHTTP)
+	mux.HandleFunc("GET /api/v1/websites/{id}/regions", middlewares.Auth(listWebsitesRegionalStatusHandler(websiteHandler)).ServeHTTP)
 
 	server := &http.Server{
 		Addr:    ":8080",

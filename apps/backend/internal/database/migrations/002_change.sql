@@ -49,5 +49,3 @@ CREATE INDEX idx_website_user_id
 
 CREATE INDEX idx_website_tick_website_created_at
     ON website_tick(website_id, created_at DESC);
-
-

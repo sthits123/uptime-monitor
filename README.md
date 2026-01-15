@@ -35,8 +35,43 @@ A modern, full-stack uptime monitoring application that helps you track the avai
 
 **Infrastructure:**
 - Docker & Docker Compose
-- Turbo for monorepo management
 - Bun as package manager
+
+### System Diagram
+
+```mermaid
+graph TD
+    User((User))
+    WebSite[Target Website]
+
+    subgraph "Frontend Layer"
+        UI[React Dashboard]
+    end
+
+    subgraph "Service Layer"
+        API[Go Backend API]
+        Pusher[Go Pusher Service]
+        Worker[Go Regional Workers]
+    end
+
+    subgraph "Data Layer"
+        DB[(PostgreSQL)]
+        Queue[(Redis Stream)]
+    end
+
+    User --> UI
+    UI --> API
+    API --> DB
+    
+    Pusher --> DB : Fetch Targets
+    Pusher --> Queue : Dispatch Tasks
+    
+    Worker --> Queue : Consume Tasks
+    Worker --> WebSite : Health Check
+    Worker --> DB : Persist Ticks
+    
+    API -- Read --> DB
+```
 
 ## 📋 Prerequisites
 
@@ -142,26 +177,6 @@ uptime-monitor/
 └── README.md              # This file
 ```
 
-## 🔧 Configuration
-
-### Backend Environment Variables
-
-Create a `.env` file in `apps/backend/` with the following variables:
-
-```bash
-# Database
-DATABASE_URL="postgres://uptime:uptime123@localhost:5433/uptime_monitor?sslmode=disable"
-
-# JWT Secret (change in production!)
-JWT_SECRET="your-super-secret-jwt-key-change-this-in-production"
-
-# Redis
-REDIS_URL="localhost:6378"
-
-# Server
-PORT=8080
-```
-
 ### Frontend Configuration
 
 The frontend automatically connects to the backend API at `http://localhost:8080`. To change this, update the API base URL in your frontend configuration.
@@ -206,6 +221,7 @@ bun run lint        # Lint code
 - `GET /api/v1/websites/{id}` - Get single website details
 - `DELETE /api/v1/websites/{id}` - Remove a monitor and its history
 - `GET /api/v1/websites/{id}/history` - Fetch check logs for uptime dots
+- `GET /api/v1/websites/{id}/regions` - Get latest status for all monitored regions
 
 ### Health
 - `GET /api/v1/healthcheck` - API health check
@@ -214,6 +230,7 @@ bun run lint        # Lint code
 
 - **Modern Design**: Clean, professional interface with glassmorphism effects
 - **Dark Mode**: Full dark mode support with theme persistence
+- **Global Connectivity**: Real-time monitoring breakdown by geographic regions (Local, Europe, Asia)
 - **Responsive**: Mobile-first design that works on all devices
 - **Animations**: Smooth transitions and micro-interactions
 - **Accessibility**: Built with Radix UI for WCAG compliance
@@ -318,7 +335,6 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## 🙏 Acknowledgments
 
-- [Radix UI](https://www.radix-ui.com/) for accessible components
 - [TailwindCSS](https://tailwindcss.com/) for utility-first CSS
 - [shadcn/ui](https://ui.shadcn.com/) for component inspiration
 - [Lucide](https://lucide.dev/) for beautiful icons

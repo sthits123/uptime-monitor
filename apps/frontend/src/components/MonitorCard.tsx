@@ -14,7 +14,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { apiClient, type Website } from "@/lib/api";
+import { apiClient, type Website, type RegionalStatus } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import {
@@ -31,20 +31,25 @@ interface MonitorCardProps {
 
 export function MonitorCard({ website, onDelete }: MonitorCardProps) {
   const [history, setHistory] = useState<any[]>([]);
+  const [regionalStatus, setRegionalStatus] = useState<RegionalStatus[]>([]);
   const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
-    fetchHistory();
-    const interval = setInterval(fetchHistory, 30000);
+    fetchData();
+    const interval = setInterval(fetchData, 30000);
     return () => clearInterval(interval);
   }, []);
 
-  const fetchHistory = async () => {
+  const fetchData = async () => {
     try {
-      const data = await apiClient.getWebsiteHistory(website.id, 24);
-      setHistory(data.reverse()); // Show chronological dots
+      const [historyData, regionalData] = await Promise.all([
+        apiClient.getWebsiteHistory(website.id, 24),
+        apiClient.getWebsiteRegionalStatus(website.id)
+      ]);
+      setHistory(historyData.reverse());
+      setRegionalStatus(regionalData);
     } catch (err) {
-      console.error("Failed to fetch history:", err);
+      console.error("Failed to fetch data:", err);
     }
   };
 
@@ -135,6 +140,40 @@ export function MonitorCard({ website, onDelete }: MonitorCardProps) {
                   </TooltipProvider>
                 );
               })}
+            </div>
+          </div>
+
+          {/* Global Connectivity */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 ml-0.5">
+              <span>Global Connectivity</span>
+              <span className="flex items-center gap-1.5 text-blue-500">
+                <Globe className="h-3 w-3" />
+                {regionalStatus.length} Regions
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              {regionalStatus.length > 0 ? (
+                regionalStatus.map((region) => (
+                  <div key={region.region_name} className="flex items-center justify-between p-3 rounded-2xl bg-muted/40 border border-border/50 group/region hover:border-primary/30 transition-all duration-300">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className={cn(
+                        "w-2 h-2 rounded-full",
+                        region.status.toLowerCase() === 'up' ? "bg-emerald-500" : "bg-rose-500"
+                      )} />
+                      <span className="text-[10px] font-black uppercase tracking-widest text-foreground/80 truncate">{region.region_name}</span>
+                    </div>
+                    <span className="text-[9px] font-black tabular-nums text-muted-foreground/60 group-hover/region:text-primary transition-colors italic">
+                      {region.response_time_ms}ms
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <div className="col-span-2 p-3 rounded-2xl bg-muted/20 border border-dashed border-border/50 flex items-center justify-center">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/30">Synchronizing Nodes...</span>
+                </div>
+              )}
             </div>
           </div>
 

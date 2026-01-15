@@ -2,7 +2,8 @@ package models
 
 import (
 	"time"
-    "github.com/google/uuid"
+
+	"github.com/google/uuid"
 )
 
 type WebsiteStatus string
@@ -12,7 +13,6 @@ const (
 	StatusDown    WebsiteStatus = "Down"
 	StatusUnknown WebsiteStatus = "Unknown"
 )
-
 
 type WebsiteTick struct {
 	ID             uuid.UUID     `db:"id" json:"id"`
@@ -28,4 +28,11 @@ type WebsiteWithStatus struct {
 	Status         WebsiteStatus `db:"status" json:"status"`
 	ResponseTimeMs int           `db:"response_time_ms" json:"response_time_ms"`
 	CheckedAt      time.Time     `db:"created_at" json:"checked_at"`
+}
+
+type RegionalStatus struct {
+	RegionName     string        `json:"region_name"`
+	Status         WebsiteStatus `json:"status"`
+	ResponseTimeMs int           `json:"response_time_ms"`
+	LastChecked    time.Time     `json:"last_checked"`
 }

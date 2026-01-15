@@ -9,7 +9,6 @@ tasks:
     cmds:
     - task --list-all
     silent: true
-
   confirm:
     desc: confirmation prompt
     cmds:
@@ -53,3 +52,16 @@ tasks:
     - go mod tidy
     - echo 'Verifying dependencies...'
     - go mod verify
+
+  pusher:
+    desc: run the job pusher
+    cmds:
+    - go run ./cmd/pusher
+
+  worker:
+    desc: run a regional worker (default region=local)
+    vars:
+      REGION: '{{.region | default "local"}}'
+    cmds:
+    - echo "Scaling monitoring node for region [{{.REGION}}]..."
+    - REGION={{.REGION}} go run ./cmd/worker

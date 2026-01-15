@@ -39,6 +39,13 @@ export interface CreateWebsiteResponse {
 	url: string;
 }
 
+export interface RegionalStatus {
+	region_name: string;
+	status: string;
+	response_time_ms: number;
+	last_checked: string;
+}
+
 // API Client
 class ApiClient {
 	private baseURL: string;
@@ -208,6 +215,29 @@ class ApiClient {
 					window.location.href = '/signin';
 				}
 				throw new Error(error.response?.data?.message || 'Failed to fetch history');
+			}
+			throw error;
+		}
+	}
+
+	async getWebsiteRegionalStatus(id: string): Promise<RegionalStatus[]> {
+		try {
+			const response = await axios.get<RegionalStatus[]>(
+				`${this.baseURL}/api/v1/websites/${id}/regions`,
+				{
+					headers: {
+						...this.getAuthHeader(),
+					},
+				}
+			);
+			return response.data || [];
+		} catch (error) {
+			if (error instanceof AxiosError) {
+				if (error.response?.status === 401) {
+					localStorage.removeItem('token');
+					window.location.href = '/signin';
+				}
+				throw new Error(error.response?.data?.message || 'Failed to fetch regional status');
 			}
 			throw error;
 		}
