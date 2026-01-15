@@ -37,41 +37,7 @@ A modern, full-stack uptime monitoring application that helps you track the avai
 - Docker & Docker Compose
 - Bun as package manager
 
-### System Diagram
 
-```mermaid
-graph TD
-    User((User))
-    WebSite[Target Website]
-
-    subgraph "Frontend Layer"
-        UI[React Dashboard]
-    end
-
-    subgraph "Service Layer"
-        API[Go Backend API]
-        Pusher[Go Pusher Service]
-        Worker[Go Regional Workers]
-    end
-
-    subgraph "Data Layer"
-        DB[(PostgreSQL)]
-        Queue[(Redis Stream)]
-    end
-
-    User --> UI
-    UI --> API
-    API --> DB
-    
-    Pusher --> DB : Fetch Targets
-    Pusher --> Queue : Dispatch Tasks
-    
-    Worker --> Queue : Consume Tasks
-    Worker --> WebSite : Health Check
-    Worker --> DB : Persist Ticks
-    
-    API -- Read --> DB
-```
 
 ## 📋 Prerequisites
 
