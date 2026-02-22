@@ -1,17 +1,27 @@
-
 package main
 
 import (
 	"context"
 	"log"
+	"os"
 	"time"
-    "github.com/sthits123/uptime-monitor/internal/database"
-	"github.com/sthits123/uptime-monitor/internal/repositories"
+
+	"github.com/joho/godotenv"
+	"github.com/sthits123/uptime-monitor/internal/database"
 	"github.com/sthits123/uptime-monitor/internal/redis"
+	"github.com/sthits123/uptime-monitor/internal/repositories"
 )
 
 func main() {
-	ctx := context.Background()
+	_ = godotenv.Load()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	addr := os.Getenv("REDIS_ADDR")
+	if addr == "" {
+		log.Fatal("REDIS_ADDR is required")
+	}
 
 	db, err := database.New()
 	if err != nil {
@@ -19,7 +29,7 @@ func main() {
 	}
 	defer db.Close()
 
-	rdb := redis.NewRedisClient("localhost:6379")
+	rdb := redis.NewRedisClient(addr)
 
 	websiteRepo := repositories.NewWebsiteRepo(db.Pool)
 
@@ -46,10 +56,9 @@ func main() {
 		log.Printf("pushed %d websites\n", len(websites))
 	}
 
-	push() 
+	push()
 
 	for range ticker.C {
 		push()
 	}
 }
-

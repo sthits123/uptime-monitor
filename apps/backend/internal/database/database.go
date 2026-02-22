@@ -19,12 +19,14 @@ const DatabasePingTimeout = 10
 
 func New() (*Database, error) {
 
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env files")
+	_ = godotenv.Load()
+
+	dsn := os.Getenv("DATABASE_URL")
+	if dsn == "" {
+		return nil, fmt.Errorf("DATABASE_URL environment variable is not set")
 	}
 
-	pool, err := pgxpool.New(context.Background(), os.Getenv("DATABASE_URL"))
+	pool, err := pgxpool.New(context.Background(), dsn)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create pgx pool: %w", err)
 	}

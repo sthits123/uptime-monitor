@@ -18,8 +18,11 @@ var migrations embed.FS
 
 func Migrate(ctx context.Context) error {
 
-	godotenv.Load()
+	_ = godotenv.Load()
 	dsn := os.Getenv("DATABASE_URL")
+	if dsn == "" {
+		return fmt.Errorf("DATABASE_URL environment variable is not set")
+	}
 
 	conn, err := pgx.Connect(ctx, dsn)
 	if err != nil {

@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"syscall"
 
+	"github.com/joho/godotenv"
+
 	"github.com/sthits123/uptime-monitor/internal/database"
 	goredis "github.com/sthits123/uptime-monitor/internal/redis"
 	"github.com/sthits123/uptime-monitor/internal/repositories"
@@ -15,6 +17,8 @@ import (
 )
 
 func main() {
+	_ = godotenv.Load()
+
 	region := os.Getenv("REGION")
 	if region == "" {
 		region = "local"
@@ -27,7 +31,7 @@ func main() {
 
 	addr := os.Getenv("REDIS_ADDR")
 	if addr == "" {
-		addr = "localhost:6379"
+		log.Fatal("REDIS_ADDR is required")
 	}
 
 	db, err := database.New()
