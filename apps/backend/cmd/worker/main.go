@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"syscall"
 
+	"github.com/joho/godotenv"
 	"github.com/sthits123/uptime-monitor/internal/database"
 	goredis "github.com/sthits123/uptime-monitor/internal/redis"
 	"github.com/sthits123/uptime-monitor/internal/repositories"
@@ -15,6 +16,8 @@ import (
 )
 
 func main() {
+	_ = godotenv.Overload()
+
 	region := os.Getenv("REGION")
 	if region == "" {
 		region = "local"
