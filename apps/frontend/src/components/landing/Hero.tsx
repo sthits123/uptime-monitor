@@ -35,12 +35,12 @@ const Hero = () => {
           {/* CTAs */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12 animate-fade-in" style={{ animationDelay: "0.3s" }}>
             <Link to="/dashboard">
-              <Button variant="hero" size="xl">
+              <Button variant="default" size="lg">
                 Start monitoring free
                 <ArrowRight className="w-5 h-5" />
               </Button>
             </Link>
-            <Button variant="outline" size="xl">
+            <Button variant="outline" size="lg">
               View demo
             </Button>
           </div>
@@ -86,7 +86,7 @@ const Hero = () => {
 
                 {/* Mock Monitor Bars */}
                 <div className="space-y-3">
-                  {["api.example.com", "app.example.com", "cdn.example.com"].map((name, i) => (
+                  {["api.example.com", "app.example.com", "cdn.example.com"].map((name) => (
                     <div key={name} className="flex items-center gap-4 p-3 rounded-lg bg-muted/50">
                       <div className="w-2 h-2 rounded-full bg-success" />
                       <span className="text-sm font-medium flex-1">{name}</span>
