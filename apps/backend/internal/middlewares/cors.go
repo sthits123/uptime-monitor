@@ -2,12 +2,26 @@ package middlewares
 
 import (
 	"net/http"
+	"os"
+	"strings"
 )
 
 func CORS(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5173")
+		allowedOrigins := []string{}
+
+		if frontendURL := os.Getenv("FRONTEND_URL"); frontendURL != "" {
+			allowedOrigins = append(allowedOrigins, strings.TrimSpace(frontendURL))
+		}
+
+		origin := r.Header.Get("Origin")
+		for _, allowed := range allowedOrigins {
+			if origin == allowed {
+				w.Header().Set("Access-Control-Allow-Origin", origin)
+				break
+			}
+		}
 
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 
