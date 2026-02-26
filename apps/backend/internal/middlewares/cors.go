@@ -9,7 +9,10 @@ import (
 func CORS(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-		allowedOrigins := []string{}
+		allowedOrigins := []string{
+			"http://localhost:5173",
+			
+		}
 
 		if frontendURL := os.Getenv("FRONTEND_URL"); frontendURL != "" {
 			allowedOrigins = append(allowedOrigins, strings.TrimSpace(frontendURL))
@@ -17,7 +20,7 @@ func CORS(next http.Handler) http.Handler {
 
 		origin := r.Header.Get("Origin")
 		for _, allowed := range allowedOrigins {
-			if origin == allowed {
+			if strings.TrimSpace(origin) == strings.TrimSpace(allowed) {
 				w.Header().Set("Access-Control-Allow-Origin", origin)
 				break
 			}

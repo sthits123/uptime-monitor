@@ -67,9 +67,15 @@ export default function Dashboard() {
     }
 
     let url = newWebsiteUrl.trim();
-    if (!/^https?:\/\//i.test(url)) {
-      url = 'https://' + url;
-    }
+    
+    // Clean up the URL - remove any existing protocol prefix
+    url = url.replace(/^https?:\/\//i, '');
+    
+    // Also remove any duplicate colons or slashes
+    url = url.replace(/^:+/, '').replace(/^\/+/, '');
+    
+    // Add https:// prefix
+    url = 'https://' + url;
 
     try {
       setIsCreating(true);
