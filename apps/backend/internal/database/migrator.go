@@ -18,7 +18,7 @@ var migrations embed.FS
 
 func Migrate(ctx context.Context) error {
 
-	godotenv.Load()
+	_ = godotenv.Overload()
 	dsn := os.Getenv("DATABASE_URL")
 
 	conn, err := pgx.Connect(ctx, dsn)

@@ -9,6 +9,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/joho/godotenv"
 	"github.com/sthits123/uptime-monitor/internal/database"
 	"github.com/sthits123/uptime-monitor/internal/handlers"
 	"github.com/sthits123/uptime-monitor/internal/middlewares"
@@ -115,12 +116,17 @@ func listWebsitesHandler(websiteHandler *handlers.WebsiteHandler) http.HandlerFu
 }
 
 func main() {
-	// Start the database
+	// Load .env file if exists (optional for production)
+	_ = godotenv.Overload()
+
 	db, err := database.New()
 	secret := os.Getenv("JWT_SECRET")
 	if err != nil {
 		log.Fatal("failed to connect to database: ", err)
 	}
+	defer db.Close()
+
+	port := os.Getenv("PORT")
 	defer db.Close()
 
 	userRepo := repositories.NewUserRepo(db.Pool)
@@ -143,12 +149,12 @@ func main() {
 	mux.HandleFunc("GET /api/v1/websites/{id}/regions", middlewares.Auth(listWebsitesRegionalStatusHandler(websiteHandler)).ServeHTTP)
 
 	server := &http.Server{
-		Addr:    ":8080",
+		Addr:    ":" + port,
 		Handler: middlewares.CORS(mux),
 	}
 
 	go func() {
-		log.Println("server listening on :8080")
+		log.Println("server listening on :" + port)
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatal(err)
 		}
