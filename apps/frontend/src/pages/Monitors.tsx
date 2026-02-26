@@ -1,8 +1,8 @@
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
-import { MonitorCard } from "@/components/MonitorCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Card, CardContent } from "@/components/ui/card";
 import { 
   Plus, 
   Search, 
@@ -181,7 +181,20 @@ export default function Monitors() {
               viewMode === "grid" ? "md:grid-cols-2" : "grid-cols-1"
             )}>
               {filteredMonitors.map((monitor, index) => (
-                <MonitorCard key={index} {...monitor} />
+                <Card key={index} className="p-4">
+                  <CardContent className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium">{monitor.name}</p>
+                      <p className="text-sm text-muted-foreground">{monitor.url}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className={`font-medium ${monitor.status === 'up' ? 'text-green-500' : monitor.status === 'degraded' ? 'text-yellow-500' : 'text-red-500'}`}>
+                        {monitor.status}
+                      </p>
+                      <p className="text-sm text-muted-foreground">{monitor.responseTime}ms</p>
+                    </div>
+                  </CardContent>
+                </Card>
               ))}
             </div>
           ) : (
