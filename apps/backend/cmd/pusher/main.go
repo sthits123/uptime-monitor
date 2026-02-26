@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/joho/godotenv"
@@ -18,7 +19,14 @@ func main() {
 
 	addr := os.Getenv("REDIS_ADDR")
 	if addr == "" {
-		addr = "localhost:6378"
+		addr = "localhost:6379"
+	}
+
+	pushInterval := 60
+	if interval := os.Getenv("PUSH_INTERVAL_SECONDS"); interval != "" {
+		if parsed, err := strconv.Atoi(interval); err == nil && parsed > 0 {
+			pushInterval = parsed
+		}
 	}
 
 	db, err := database.New()
@@ -31,7 +39,8 @@ func main() {
 
 	websiteRepo := repositories.NewWebsiteRepo(db.Pool)
 
-	ticker := time.NewTicker(10 * time.Second)
+	log.Printf("Starting pusher with %d second interval", pushInterval)
+	ticker := time.NewTicker(time.Duration(pushInterval) * time.Second)
 	defer ticker.Stop()
 
 	push := func() {

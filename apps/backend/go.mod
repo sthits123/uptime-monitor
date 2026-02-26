@@ -1,6 +1,6 @@
 module github.com/sthits123/uptime-monitor
 
-go 1.25.0
+go 1.24.0
 
 require (
 	github.com/alexedwards/argon2id v1.0.0
