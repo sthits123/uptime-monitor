@@ -17,7 +17,7 @@ import (
 
 func main() {
 	_ = godotenv.Overload()
-
+	ctx := context.Background()
 	region := os.Getenv("REGION")
 	if region == "" {
 		region = "local"
@@ -50,6 +50,12 @@ func main() {
 	// Group per region
 	if err := goredis.EnsureGroup(ctx, rdb, goredis.StreamName, region); err != nil {
 		log.Fatal(err)
+	}
+
+	// Ensure region exists in DB
+	_, err = regionRepo.EnsureExists(ctx, region)
+	if err != nil {
+		log.Fatalf("failed to ensure region exists: %v", err)
 	}
 
 	workers.StartRegionWorkers(

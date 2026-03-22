@@ -1,23 +1,180 @@
+version: '3.8'
+
 services:
+  # PostgreSQL Database
   postgres:
-    image: postgres:16
+    image: postgres:16-alpine
     container_name: uptime-postgres
     restart: unless-stopped
     ports:
-      - "5433:5432"
+      - "5434:5432"
     environment:
       POSTGRES_USER: uptime
       POSTGRES_PASSWORD: uptime123
       POSTGRES_DB: uptime_monitor
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U uptime" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
+  # Redis for message queue
   redis:
-    image: redis:7
+    image: redis:7-alpine
     container_name: uptime-redis
     restart: unless-stopped
     ports:
-      - "6378:6379"
+      - "6380:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # API Server
+  api:
+    build:
+      context: ./apps/backend
+      dockerfile: Dockerfile
+    container_name: uptime-api
+    restart: unless-stopped
+    ports:
+      - "8082:8082"
+    environment:
+      DATABASE_URL: "postgresql://uptime:uptime123@postgres:5432/uptime_monitor"
+      REDIS_ADDR: "redis:6379"
+      REDIS_PASSWORD: ""
+      REDIS_USE_TLS: "false"
+      FRONTEND_URL: "http://localhost:5173"
+      JWT_SECRET: "dev-secret-change-in-production"
+      PORT: "8082"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # Pusher Service
+  pusher:
+    build:
+      context: ./apps/backend
+      dockerfile: Dockerfile
+    container_name: uptime-pusher
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: "postgresql://uptime:uptime123@postgres:5432/uptime_monitor"
+      REDIS_ADDR: "redis:6379"
+      REDIS_PASSWORD: ""
+      REDIS_USE_TLS: "false"
+      PUSH_INTERVAL_SECONDS: "60"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: [ "./pusher" ]
+
+  # Worker - Global
+  worker:
+    build:
+      context: ./apps/backend
+      dockerfile: Dockerfile
+    container_name: uptime-worker
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: "postgresql://uptime:uptime123@postgres:5432/uptime_monitor"
+      REDIS_ADDR: "redis:6379"
+      REDIS_PASSWORD: ""
+      REDIS_USE_TLS: "false"
+      REGION: "global"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: [ "./worker" ]
+
+  # Worker - Asia
+  worker-asia:
+    build:
+      context: ./apps/backend
+      dockerfile: Dockerfile
+    container_name: uptime-worker-asia
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: "postgresql://uptime:uptime123@postgres:5432/uptime_monitor"
+      REDIS_ADDR: "redis:6379"
+      REDIS_PASSWORD: ""
+      REDIS_USE_TLS: "false"
+      REGION: "asia"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: [ "./worker" ]
+
+  # Worker - Europe
+  worker-europe:
+    build:
+      context: ./apps/backend
+      dockerfile: Dockerfile
+    container_name: uptime-worker-europe
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: "postgresql://uptime:uptime123@postgres:5432/uptime_monitor"
+      REDIS_ADDR: "redis:6379"
+      REDIS_PASSWORD: ""
+      REDIS_USE_TLS: "false"
+      REGION: "europe"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: [ "./worker" ]
+
+  # ML Anomaly Detection Service
+  ml-service:
+    build:
+      context: ./apps/ml
+      dockerfile: Dockerfile
+    container_name: uptime-ml-service
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: "postgresql://uptime:uptime123@postgres:5432/uptime_monitor"
+      ML_POLL_INTERVAL: "30"
+      ML_MIN_SAMPLES: "50"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ml_data:/app/models
+
+  # Frontend
+  frontend:
+    build:
+      context: .
+      dockerfile: apps/frontend/Dockerfile
+    container_name: uptime-frontend
+    restart: unless-stopped
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./apps/frontend:/app/apps/frontend
+      - /app/apps/frontend/node_modules
+    environment:
+      - VITE_API_URL=http://localhost:8082
+    depends_on:
+      - api
 
 volumes:
   postgres_data:
+  redis_data:
+  ml_data:

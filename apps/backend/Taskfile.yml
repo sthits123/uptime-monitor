@@ -1,7 +1,7 @@
 version: '3'
 
 vars:
-  TASKER_DB_DSN: '{{.DATABASE_URL | default ""}}'
+  TASKER_DB_DSN: "{{.DATABASE_URL | default \"\"}}"
 
 tasks:
   help:
@@ -41,7 +41,7 @@ tasks:
     deps: [ confirm ]
     cmds:
     - echo 'Running up migrations...'
-    - tern migrate -m ./internal/database/migrations --conn-string {{.TASKER_DB_DSN}}
+    - tern migrate -m ./internal/database/migrations --conn-string "{{.TASKER_DB_DSN}}"
 
   tidy:
     desc: format all .go files, and tidy and vendor module dependencies

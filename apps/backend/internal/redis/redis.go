@@ -2,23 +2,21 @@ package redis
 
 import (
 	"context"
-	"crypto/tls"
-	"github.com/redis/go-redis/v9"
 	"log"
-	"os"
+
+	"github.com/redis/go-redis/v9"
 )
 
 const StreamName = "uptime_monitor"
 
 func NewRedisClient(addr string) *redis.Client {
+	opts, err := redis.ParseURL(addr)
+	if err != nil {
 
-	password := os.Getenv("REDIS_PASSWORD")
+		log.Fatal("Error connecting to redis: ", err)
+	}
 
-	rdb := redis.NewClient(&redis.Options{
-		Addr:      addr,
-		Password:  password,
-		TLSConfig: &tls.Config{MinVersion: tls.VersionTLS12},
-	})
+	rdb := redis.NewClient(opts)
 
 	if err := rdb.Ping(context.Background()).Err(); err != nil {
 		log.Fatalf("redis connection failed: %v", err)

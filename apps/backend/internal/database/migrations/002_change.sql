@@ -1,4 +1,3 @@
--- +migrate Up
 
 CREATE TYPE website_status AS ENUM ('up', 'down', 'unknown');
 

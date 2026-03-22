@@ -6,7 +6,6 @@ import {
   Trash2,
   CheckCircle2,
   XCircle,
-  RefreshCcw,
 } from "lucide-react";
 import {
   Card,
@@ -23,6 +22,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { AnomalyPanel } from "./AnomalyPanel";
 
 interface MonitorCardProps {
   website: Website;
@@ -44,7 +44,7 @@ export function MonitorCard({ website, onDelete }: MonitorCardProps) {
     try {
       const [historyData, regionalData] = await Promise.all([
         apiClient.getWebsiteHistory(website.id, 24),
-        apiClient.getWebsiteRegionalStatus(website.id)
+        apiClient.getWebsiteRegionalStatus(website.id),
       ]);
       setHistory(historyData.reverse());
       setRegionalStatus(regionalData);
@@ -70,8 +70,7 @@ export function MonitorCard({ website, onDelete }: MonitorCardProps) {
   const statusInfo = (status: string | null | undefined) => {
     const s = (status || "").toLowerCase();
     if (s === "up") return { color: "bg-emerald-500", text: "Operational", icon: CheckCircle2 };
-    if (s === "down") return { color: "bg-rose-500", text: "Outage", icon: XCircle };
-    return { color: "bg-amber-500", text: "Syncing", icon: RefreshCcw };
+    return { color: "bg-rose-500", text: "Offline", icon: XCircle };
   };
 
   const info = statusInfo(website.status);
@@ -143,6 +142,12 @@ export function MonitorCard({ website, onDelete }: MonitorCardProps) {
             </div>
           </div>
 
+          {/* AI Anomaly Detection Panel */}
+          <AnomalyPanel
+            websiteId={website.id}
+            websiteUrl={website.url}
+          />
+
           {/* Global Connectivity */}
           <div className="space-y-4">
             <div className="flex items-center justify-between text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 ml-0.5">
@@ -155,20 +160,60 @@ export function MonitorCard({ website, onDelete }: MonitorCardProps) {
 
             <div className="grid grid-cols-2 gap-3">
               {regionalStatus.length > 0 ? (
-                regionalStatus.map((region) => (
-                  <div key={region.region_name} className="flex items-center justify-between p-3 rounded-2xl bg-muted/40 border border-border/50 group/region hover:border-primary/30 transition-all duration-300">
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <div className={cn(
-                        "w-2 h-2 rounded-full",
-                        region.status.toLowerCase() === 'up' ? "bg-emerald-500" : "bg-rose-500"
-                      )} />
-                      <span className="text-[10px] font-black uppercase tracking-widest text-foreground/80 truncate">{region.region_name}</span>
-                    </div>
-                    <span className="text-[9px] font-black tabular-nums text-muted-foreground/60 group-hover/region:text-primary transition-colors italic">
-                      {region.response_time_ms}ms
-                    </span>
-                  </div>
-                ))
+                regionalStatus.map((region) => {
+                  const normalizedStatus = (region.status || '').toLowerCase();
+                  const isUp = normalizedStatus === 'up';
+                  const isDown = normalizedStatus === 'down' || normalizedStatus === 'unknown' || !normalizedStatus;
+                  return (
+                    <TooltipProvider key={region.region_name}>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className={cn(
+                            "flex items-center justify-between p-3 rounded-2xl border transition-all duration-300 cursor-help",
+                            isUp ? "bg-emerald-500/10 border-emerald-500/30" : "bg-red-500/10 border-red-500/30",
+                            isUp ? "hover:border-emerald-500/50" : "hover:border-red-500/50"
+                          )}>
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <div className={cn(
+                                "w-2 h-2 rounded-full",
+                                isUp ? "bg-emerald-500 animate-pulse" : "bg-red-500"
+                              )} />
+                              <span className="text-[10px] font-black uppercase tracking-widest text-foreground/80 truncate">{region.region_name}</span>
+                            </div>
+                            <span className={cn(
+                              "text-[9px] font-black tabular-nums italic",
+                              isUp ? "text-emerald-500/80" : "text-red-500/80",
+                              "group-hover/region:transition-colors"
+                            )}>
+                              {isDown ? '--' : `${region.response_time_ms}ms`}
+                            </span>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent className="bg-popover/90 backdrop-blur-md border-border text-[10px] font-black text-popover-foreground p-3 rounded-xl shadow-2xl">
+                          <div className="space-y-1">
+                            <p className={cn(
+                              "uppercase tracking-widest font-black",
+                              isUp ? "text-emerald-500" : "text-red-500"
+                            )}>
+                              {isUp ? "Operational" : "Offline"}
+                            </p>
+                            <p className="text-muted-foreground/60">
+                              {isDown
+                                ? `Worker not running`
+                                : `Last checked: ${new Date(region.last_checked).toLocaleString()}`
+                              }
+                            </p>
+                            {isDown && region.response_time_ms > 0 && (
+                              <p className="text-muted-foreground/60">
+                                Response: {region.response_time_ms}ms
+                              </p>
+                            )}
+                          </div>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  );
+                })
               ) : (
                 <div className="col-span-2 p-3 rounded-2xl bg-muted/20 border border-dashed border-border/50 flex items-center justify-center">
                   <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/30">Synchronizing Nodes...</span>
@@ -177,7 +222,7 @@ export function MonitorCard({ website, onDelete }: MonitorCardProps) {
             </div>
           </div>
 
-          <div className="flex items-center justify-between pt-8 border-t border-border/50">
+          <div className="flex items-center justify-between pt-6 border-t border-border/50">
             <div className="space-y-1.5">
               <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/30">Latency Delta</p>
               <div className="flex items-center gap-2 font-black text-indigo-500 italic text-lg tracking-tighter">

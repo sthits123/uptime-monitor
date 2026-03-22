@@ -104,6 +104,24 @@ func listWebsitesRegionalStatusHandler(websiteHandler *handlers.WebsiteHandler) 
 	}
 }
 
+func listWebsitesRegionalHistoryHandler(websiteHandler *handlers.WebsiteHandler) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		userID := middlewares.UserID(r)
+		if userID == "" {
+			http.Error(w, "unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		websiteID := r.PathValue("id")
+		if websiteID == "" {
+			http.Error(w, "website id is required", http.StatusBadRequest)
+			return
+		}
+
+		websiteHandler.GetWebsiteRegionalHistory(w, r, userID, websiteID)
+	}
+}
+
 func listWebsitesHandler(websiteHandler *handlers.WebsiteHandler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		userID := middlewares.UserID(r)
@@ -116,7 +134,6 @@ func listWebsitesHandler(websiteHandler *handlers.WebsiteHandler) http.HandlerFu
 }
 
 func main() {
-	// Load .env file if exists (optional for production)
 	_ = godotenv.Overload()
 
 	db, err := database.New()
@@ -132,13 +149,31 @@ func main() {
 	userRepo := repositories.NewUserRepo(db.Pool)
 	websiteRepo := repositories.NewWebsiteRepo(db.Pool)
 	tickRepo := repositories.NewWebsiteTickRepo(db.Pool)
+	regionRepo := repositories.NewRegionRepo(db.Pool)
+	anomalyRepo := repositories.NewAnomalyRepo(db.Pool)
 
 	authHandler := handlers.NewAuthHandler(userRepo, secret)
 	websiteHandler := handlers.NewWebsiteHandler(websiteRepo, tickRepo)
+	anomalyHandler := handlers.NewAnomalyHandler(anomalyRepo, regionRepo)
 
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("GET /api/v1/healthcheck", handlers.Healthcheck)
+
+	// Seed regions endpoint
+	mux.HandleFunc("POST /api/v1/admin/seed-regions", func(w http.ResponseWriter, r *http.Request) {
+		ctx := context.Background()
+		regions := []string{"asia", "europe"}
+		for _, region := range regions {
+			if _, err := regionRepo.EnsureExists(ctx, region); err != nil {
+				http.Error(w, `{"error":"Failed to seed regions"}`, 500)
+				return
+			}
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{"status":"success","message":"Regions seeded"}`))
+	})
+
 	mux.HandleFunc("POST /api/v1/signup", authHandler.Signup)
 	mux.HandleFunc("POST /api/v1/signin", authHandler.Signin)
 	mux.HandleFunc("GET /api/v1/websites", middlewares.Auth(listWebsitesHandler(websiteHandler)).ServeHTTP)
@@ -147,6 +182,12 @@ func main() {
 	mux.HandleFunc("DELETE /api/v1/websites/{id}", middlewares.Auth(deleteWebsiteHandler(websiteHandler)).ServeHTTP)
 	mux.HandleFunc("GET /api/v1/websites/{id}/history", middlewares.Auth(listWebsitesHistoryHandler(websiteHandler)).ServeHTTP)
 	mux.HandleFunc("GET /api/v1/websites/{id}/regions", middlewares.Auth(listWebsitesRegionalStatusHandler(websiteHandler)).ServeHTTP)
+	mux.HandleFunc("GET /api/v1/websites/{id}/regional-history", middlewares.Auth(listWebsitesRegionalHistoryHandler(websiteHandler)).ServeHTTP)
+
+	mux.HandleFunc("POST /api/v1/anomaly/alert", anomalyHandler.ReceiveAnomalyAlert)
+	mux.HandleFunc("GET /api/v1/anomaly/recent", anomalyHandler.GetRecentAnomalies)
+	mux.HandleFunc("GET /api/v1/anomaly/website", anomalyHandler.GetAnomaliesByWebsite)
+	mux.HandleFunc("GET /api/v1/anomaly/score", anomalyHandler.GetAnomalyScore)
 
 	server := &http.Server{
 		Addr:    ":" + port,

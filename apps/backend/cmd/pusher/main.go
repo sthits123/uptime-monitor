@@ -17,11 +17,9 @@ func main() {
 	_ = godotenv.Overload()
 	ctx := context.Background()
 
-	addr := os.Getenv("REDIS_ADDR")
-	if addr == "" {
-		addr = "localhost:6379"
-	}
+	
 
+	addr := os.Getenv("REDIS_ADDR")
 	pushInterval := 60
 	if interval := os.Getenv("PUSH_INTERVAL_SECONDS"); interval != "" {
 		if parsed, err := strconv.Atoi(interval); err == nil && parsed > 0 {

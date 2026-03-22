@@ -5,15 +5,16 @@ import (
 	"embed"
 	"fmt"
 	"io/fs"
-
 	"log"
 	"os"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 	tern "github.com/jackc/tern/v2/migrate"
 	"github.com/joho/godotenv"
 )
 
+//go:embed migrations/*.sql
 var migrations embed.FS
 
 func Migrate(ctx context.Context) error {
@@ -21,9 +22,12 @@ func Migrate(ctx context.Context) error {
 	_ = godotenv.Overload()
 	dsn := os.Getenv("DATABASE_URL")
 
+	ctx, cancel := context.WithTimeout(ctx, 60*time.Second)
+	defer cancel()
+
 	conn, err := pgx.Connect(ctx, dsn)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to connect for migrations: %w", err)
 	}
 	defer conn.Close(ctx)
 

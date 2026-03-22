@@ -136,3 +136,27 @@ func (h *WebsiteHandler) GetWebsiteRegionalStatus(w http.ResponseWriter, r *http
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(statuses)
 }
+
+func (h *WebsiteHandler) GetWebsiteRegionalHistory(w http.ResponseWriter, r *http.Request, userID, websiteID string) {
+	_, err := h.websiteRepo.FindByID(r.Context(), userID, websiteID)
+	if err != nil {
+		utils.SendJSONError(w, "Website not found", http.StatusNotFound)
+		return
+	}
+
+	limitStr := r.URL.Query().Get("limit")
+	limit, _ := strconv.Atoi(limitStr)
+	if limit <= 0 {
+		limit = 100
+	}
+
+	ticks, err := h.tickRepo.GetRegionalHistory(r.Context(), websiteID, limit)
+	if err != nil {
+		log.Print(err)
+		utils.SendJSONError(w, "Could not fetch regional history", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(ticks)
+}

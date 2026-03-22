@@ -1,4 +1,3 @@
--- +migrate Up
 
 CREATE TABLE user_tick (
     id UUID PRIMARY KEY,
@@ -27,7 +26,7 @@ CREATE INDEX idx_user_tick_user_id_created_at
 CREATE INDEX idx_user_tick_website_id_created_at
     ON user_tick(website_id, created_at DESC);
 
--- +migrate Down
+---- create above / drop below ----
 
 DROP INDEX IF EXISTS idx_user_tick_website_id_created_at;
 DROP INDEX IF EXISTS idx_user_tick_user_id_created_at;

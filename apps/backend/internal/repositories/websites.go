@@ -154,6 +154,7 @@ func (r *WebsiteRepo) ListByUserIDWithStatus(ctx context.Context, userID string)
 			SELECT status, response_time_ms, response_code, created_at
 			FROM website_tick
 			WHERE website_id = w.id
+			AND created_at > now() - interval '10 minutes'
 			ORDER BY created_at DESC
 			LIMIT 1
 		) wt ON true

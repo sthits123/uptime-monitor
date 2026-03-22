@@ -46,6 +46,45 @@ export interface RegionalStatus {
 	last_checked: string;
 }
 
+export interface AnomalyScore {
+	website_id: string;
+	has_anomaly: boolean;
+	score: number;
+	confidence: number;
+	reason: string;
+	response_time_ms: number;
+	region: string;
+	detected_at?: string;
+	stats?: {
+		total_events: number;
+		anomaly_count: number;
+		avg_score: number;
+		last_anomaly_at?: string;
+	};
+}
+
+export interface AnomalyEvent {
+	id: string;
+	website_id: string;
+	region_id: string;
+	response_time_ms: number;
+	anomaly_score: number;
+	confidence: number;
+	reason: string;
+	is_anomaly: boolean;
+	created_at: string;
+	region_name?: string;
+	website_url?: string;
+}
+
+export interface RegionalTick {
+	RegionID: string;
+	RegionName: string;
+	ResponseTimeMs: number;
+	Status: string;
+	CreatedAt: string;
+}
+
 // API Client
 class ApiClient {
 	private baseURL: string;
@@ -243,6 +282,22 @@ class ApiClient {
 		}
 	}
 
+	async getRegionalHistory(id: string, limit: number = 100): Promise<RegionalTick[]> {
+		try {
+			const response = await axios.get<RegionalTick[]>(
+				`${this.baseURL}/api/v1/websites/${id}/regional-history?limit=${limit}`,
+				{
+					headers: {
+						...this.getAuthHeader(),
+					},
+				}
+			);
+			return response.data || [];
+		} catch (error) {
+			return [];
+		}
+	}
+
 	// Health check
 	async healthCheck(): Promise<{ status: string }> {
 		try {
@@ -252,6 +307,37 @@ class ApiClient {
 			return response.data;
 		} catch (error) {
 			throw new Error('Health check failed');
+		}
+	}
+
+	// Anomaly endpoints
+	async getAnomalyScore(websiteId: string): Promise<AnomalyScore> {
+		try {
+			const response = await axios.get<AnomalyScore>(
+				`${this.baseURL}/api/v1/anomaly/score?website_id=${websiteId}`
+			);
+			return response.data;
+		} catch (error) {
+			return {
+				website_id: websiteId,
+				has_anomaly: false,
+				score: 0,
+				confidence: 0,
+				reason: "normal",
+				response_time_ms: 0,
+				region: "",
+			};
+		}
+	}
+
+	async getAnomalyEvents(websiteId: string, limit: number = 20): Promise<AnomalyEvent[]> {
+		try {
+			const response = await axios.get<{ events: AnomalyEvent[]; count: number }>(
+				`${this.baseURL}/api/v1/anomaly/website?website_id=${websiteId}&limit=${limit}`
+			);
+			return response.data.events || [];
+		} catch (error) {
+			return [];
 		}
 	}
 }

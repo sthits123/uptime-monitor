@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"context"
+	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/sthits123/uptime-monitor/internal/models"
@@ -128,14 +129,30 @@ func (r *WebsiteTickRepo) GetLatestTicksByRegion(ctx context.Context, websiteID 
 				ROW_NUMBER() OVER(PARTITION BY region_id ORDER BY created_at DESC) as rn
 			FROM website_tick
 			WHERE website_id = $1
+		),
+		LatestTickPerRegion AS (
+			SELECT 
+				region_id,
+				status,
+				response_time_ms,
+				created_at
+			FROM LatestTicks
+			WHERE rn = 1
 		)
 		SELECT 
 			reg.name as region_name,
-			COALESCE(lt.status, 'unknown')::text,
-			COALESCE(lt.response_time_ms, 0),
+			CASE 
+				WHEN lt.created_at IS NULL THEN 'unknown'
+				WHEN lt.created_at < now() - interval '2 minutes' THEN 'unknown'
+				ELSE lt.status::text
+			END as status,
+			CASE 
+				WHEN lt.created_at IS NULL OR lt.created_at < now() - interval '2 minutes' THEN 0
+				ELSE lt.response_time_ms
+			END,
 			COALESCE(lt.created_at, now())
 		FROM region reg
-		LEFT JOIN LatestTicks lt ON reg.id = lt.region_id AND lt.rn = 1
+		LEFT JOIN LatestTickPerRegion lt ON reg.id = lt.region_id
 		ORDER BY reg.name ASC
 	`, websiteID)
 
@@ -160,4 +177,49 @@ func (r *WebsiteTickRepo) GetLatestTicksByRegion(ctx context.Context, websiteID 
 		statuses = append(statuses, s)
 	}
 	return statuses, nil
+}
+
+type RegionalTick struct {
+	RegionID       string    `db:"region_id"`
+	RegionName     string    `db:"region_name"`
+	ResponseTimeMs int       `db:"response_time_ms"`
+	Status         string    `db:"status"`
+	CreatedAt      time.Time `db:"created_at"`
+}
+
+func (r *WebsiteTickRepo) GetRegionalHistory(ctx context.Context, websiteID string, limit int) ([]RegionalTick, error) {
+	rows, err := r.db.Query(ctx, `
+		SELECT 
+			wt.region_id,
+			COALESCE(reg.name, wt.region_id::text) as region_name,
+			wt.response_time_ms,
+			wt.status::text,
+			wt.created_at
+		FROM website_tick wt
+		LEFT JOIN region reg ON wt.region_id = reg.id
+		WHERE wt.website_id = $1
+		ORDER BY wt.created_at DESC
+		LIMIT $2
+	`, websiteID, limit)
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var ticks []RegionalTick
+	for rows.Next() {
+		var t RegionalTick
+		if err := rows.Scan(
+			&t.RegionID,
+			&t.RegionName,
+			&t.ResponseTimeMs,
+			&t.Status,
+			&t.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		ticks = append(ticks, t)
+	}
+	return ticks, nil
 }

@@ -19,9 +19,7 @@ type Worker struct {
 }
 
 func (w *Worker) Run(ctx context.Context) {
-
 	for {
-
 		messages, err := redis.XReadGroup(
 			ctx,
 			w.Redis,
@@ -31,6 +29,9 @@ func (w *Worker) Run(ctx context.Context) {
 		)
 
 		if err != nil {
+			if ctx.Err() != nil {
+				return // Exit loop if context was canceled
+			}
 			log.Print(err)
 			continue
 		}
@@ -38,17 +39,16 @@ func (w *Worker) Run(ctx context.Context) {
 		var ackIDs []string
 
 		for _, msg := range messages {
+			log.Printf("[%s] checking website: %s (id: %s)", w.Region, msg.Payload.URL, msg.Payload.ID)
 			result := CheckWebsite(msg.Payload.URL, msg.Payload.ID)
 
-			// Get region to get region_id UUID
-			regionID, err := w.RegionRepo.GetByName(ctx, w.Region)
+			regionID, err := w.RegionRepo.EnsureExists(ctx, w.Region)
 			if err != nil {
-				log.Println("failed to get region:", err)
+				log.Println("failed to ensure region exists:", err)
 				ackIDs = append(ackIDs, msg.ID)
 				continue
 			}
 
-			// Insert into website_tick table
 			err = w.TickRepo.Insert(
 				ctx,
 				result.WebsiteID,
@@ -63,9 +63,12 @@ func (w *Worker) Run(ctx context.Context) {
 				log.Println("insert website_tick failed:", err)
 				continue
 			}
+
+			log.Printf("[%s] tick stored for %s: status=%s, response_time=%dms",
+				w.Region, result.WebsiteID, result.Status, result.ResponseTime)
+
 			ackIDs = append(ackIDs, msg.ID)
 		}
 		_ = redis.XAckBulk(ctx, w.Redis, w.Group, ackIDs)
-
 	}
 }
